@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en-GB" class="lofi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Impressum / Legal notice – Jost Neumann</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="styles.css?v=2026-10-23-legal">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./">Jost Neumann</a>
+    <nav class="sections" aria-label="Back"><a href="./">Home</a></nav>
+  </header>
+  <main class="article wrap">
+    <h1>Impressum / Legal notice</h1>
+    <p class="meta">Information pursuant to § 5 Digitale-Dienste-Gesetz (DDG) and § 18 (2) Medienstaatsvertrag (MStV)</p>
+
+    <h2>Provider</h2>
+    <p>Jost Neumann<br>
+      <span class="ph">[Postal address – street and number, postcode, city, Germany – to be completed; a summonable address is required by law]</span></p>
+
+    <h2>Contact</h2>
+    <p>Email: <a id="email-link" href="#" data-user="jost.neumann87" data-domain="googlemail.com">shown on request</a></p>
+
+    <h2>Responsible for the content (§ 18 (2) MStV)</h2>
+    <p>Jost Neumann, address as above.</p>
+
+    <h2>Liability for content and links</h2>
+    <p>The content of this site has been prepared with care; no guarantee is given that it is complete, accurate or up to date. External links lead to content of third parties, for which only their respective providers are responsible. The linked pages were checked for apparent legal violations when the links were set; no such violations were found. Links will be removed promptly if violations become known.</p>
+
+    <h2>Personal views</h2>
+    <p>The views expressed on this site are personal and do not necessarily reflect those of any current or former employer.</p>
+
+    <p class="meta">Last updated: 23 October 2026. Draft for legal review.</p>
+    <p><a class="btn" href="./">Back to the site</a> <a class="btn" href="privacy.html">Privacy notice</a></p>
+  </main>
+  <script>
+    // the address is assembled by script so that it is not readable by simple scrapers
+    const a = document.getElementById('email-link');
+    if (a) { const m = a.dataset.user + '@' + a.dataset.domain; a.href = 'mailto:' + m; a.textContent = m; }
+  </script>
+</body>
+</html>

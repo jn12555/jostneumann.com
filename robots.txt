@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /
+Sitemap: https://jostneumann.com/sitemap.xml
