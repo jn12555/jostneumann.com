@@ -510,8 +510,6 @@ function drawOutside(c, t) {
   }
   const blade = mix(reed, bankC, .3);
   GRASS.forEach((q, i) => { if (i % 3) return; const sw = reduce ? 0 : Math.sin(t * 1.1 + q.p) * 1.2; strokePath(g, [[q.x, q.y], [q.x + sw, q.y - q.h]], blade, 1); });
-  // birches framing the view in both corners
-  G(.4); birch(g, 14, 1, E, S, snowC, t); birch(g, W - 22, -1, E, S, snowC, t);
   g.setTransform(1, 0, 0, 1, 0, 0);
   if (E.shadeA > .01) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = rgba(E.shadeCol, E.shadeA); g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over'; }
   c.drawImage(LAND, 0, 0);
@@ -884,7 +882,45 @@ const SHB = document.createElement('canvas'), SHF = document.createElement('canv
 const LITB = document.createElement('canvas'), LITF = document.createElement('canvas');
 for (const c of [SHB, SHF, SHL, SHM, LITB, LITF]) { c.width = VW; c.height = VH; }
 const sb = SHB.getContext('2d'), sf = SHF.getContext('2d'), sl = SHL.getContext('2d'), sm = SHM.getContext('2d');
-let ART = [24, 90];                                // centre of the heart on the left wall, for its glow
+let ART = [24, 90];                                // centre of the print on the left wall
+const ART_Q = QS.get('art');
+const ART_KIND = ['bulb', 'hiroshige'].includes(ART_Q) ? ART_Q : ART_Q === 'topo' && window.TOPO ? 'topo' : window.DOTS ? 'dots' : window.TOPO ? 'topo' : 'hiroshige';
+const LIVE = { dots: window.DOTS, topo: window.TOPO }[ART_KIND], LIVE_FPS = ART_KIND === 'dots' ? 20 : 8;   // the live print and its steps per second
+let ARTGEO = null;                                 // the print's wall mapping, set when the shell is drawn
+// the live print (dots.js by default, topo.js with ?art=topo): drawn into its own small canvas, stretched column by column onto the wall in perspective,
+// lit like the shell and cached until its next step
+const TOPO_C = document.createElement('canvas'), ARTW = document.createElement('canvas');
+let topoStep = -1;
+function drawArtLive(c, t) {
+  if (!LIVE || !ARTGEO) return;
+  const step = Math.floor(t * LIVE_FPS);
+  if (step !== topoStep) {
+    topoStep = step;
+    const { W: TW, H: TH } = LIVE; TOPO_C.width = TW; TOPO_C.height = TH; ARTW.width = VW; ARTW.height = VH;
+    const tg = TOPO_C.getContext('2d'), img = tg.createImageData(TW, TH);
+    LIVE.draw(step / LIVE_FPS, (x, y, col) => { const i = (y * TW + x) * 4, n = parseInt(col.slice(1), 16); img.data[i] = n >> 16; img.data[i + 1] = (n >> 8) & 255; img.data[i + 2] = n & 255; img.data[i + 3] = 255; });
+    tg.putImageData(img, 0, 0);
+    const w = ARTW.getContext('2d');
+    w.imageSmoothingEnabled = false;
+    for (let x = 0; x < TW; x++) {                                       // local x 2..34, y 3..95 inside the paper
+      const [sx, y0] = ARTGEO.at(2 + x, 3), [, y1] = ARTGEO.at(2 + x, 3 + TH);
+      w.drawImage(TOPO_C, x, 0, 1, TH, Math.round(sx), Math.round(y0), 1, Math.round(y1) - Math.round(y0));
+    }
+    w.globalCompositeOperation = 'multiply'; w.drawImage(SHL, 0, 0);
+    w.globalCompositeOperation = 'destination-in'; w.drawImage(TOPO_MASK(), 0, 0);
+    w.globalCompositeOperation = 'source-over';
+  }
+  c.drawImage(ARTW, 0, 0);
+}
+// the drawn columns themselves, as the mask that keeps the light inside the print
+let topoMask = null;
+function TOPO_MASK() {
+  if (topoMask) return topoMask;
+  topoMask = document.createElement('canvas'); topoMask.width = VW; topoMask.height = VH;
+  const m = topoMask.getContext('2d'); m.fillStyle = '#000';
+  for (let x = 0; x < LIVE.W; x++) { const [sx, y0] = ARTGEO.at(2 + x, 3), [, y1] = ARTGEO.at(2 + x, 3 + LIVE.H); m.fillRect(Math.round(sx), Math.round(y0), 1, Math.round(y1) - Math.round(y0)); }
+  return topoMask;
+}
 
 function drawShellBack(c) {
   // pale ceiling with fine slats running towards the vanishing point and a recessed light line along the glass
@@ -906,7 +942,9 @@ function drawShellBack(c) {
   const ry = OY + 216, rb = 262;
   poly(c, [[OX + 56, ry], [OX + 264, ry], [toY(OX + 264, ry, rb), rb], [toY(OX + 56, ry, rb), rb]], '#45413e');
   r(c, toY(OX + 56, ry, rb), rb, toY(OX + 264, ry, rb) - toY(OX + 56, ry, rb), 1, '#33302e');
-  // left wall: a framed urban art print, a light bulb in black line whose filament wires turn into a red heart
+  // left wall: a framed print, drawn live over the paper by drawArtLive(): by default dots that move between data shapes
+  // (dots.js), with ?art=topo an animated topographic map (topo.js), both made as OpenFilm pages; ?art=hiroshige and
+  // ?art=bulb show the earlier static prints.
   const yL = (x, f) => { const t = toX(OX, OY, x), b = toX(OX, OY + 194, x); return t + (b - t) * f; };
   const AX0 = 7, AX1 = 43, F0 = .14, F1 = .66, AH = 100;                      // the art's frame on the wall, local height in pixels
   const at = (px, py) => [AX0 + px, yL(AX0 + px, F0 + py / AH * (F1 - F0))];   // local drawing coordinates -> wall
@@ -914,7 +952,8 @@ function drawShellBack(c) {
   const frameQ = (x0, x1, f0, f1, col) => poly(c, [[x0, yL(x0, f0)], [x1, yL(x1, f0)], [x1, yL(x1, f1)], [x0, yL(x0, f1)]], col);
   frameQ(AX0 - 3, AX1 + 1, F0 - .035, F1 + .02, '#141416'); frameQ(AX0 - 1.5, AX1 - .5, F0 - .02, F1 + .005, '#f4f0ea');   // black frame, white paper
   const cx = 18, cy = 30;
-  if (new URLSearchParams(location.search).get('art') === 'bulb') {                                                 // the earlier print: a light bulb whose filament turns into a heart
+  ARTGEO = { at, AH };
+  if (ART_KIND === 'bulb') {                                                      // the earlier print: a light bulb whose filament turns into a heart
     const paint = '#1c1c20', heart = '#d8443a';
     for (let a = 0; a < TAU; a += .02) { const ang = a - Math.PI / 2;               // the bulb's glass
       const px = cx + Math.cos(ang) * 15, py = cy + Math.sin(ang) * 17;
@@ -929,7 +968,7 @@ function drawShellBack(c) {
       const hx = 16 * Math.pow(Math.sin(t), 3), hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
       dot(cx + hx * .5, cy + 1 - hy * .5, heart);
     }
-  } else {
+  } else if (ART_KIND === 'hiroshige') {
     // after Hiroshige, "Sudden Shower over Shin-Ōhashi Bridge" (1857, public domain): ink sky, a pale far bank,
     // Prussian-blue river, a timber bridge with hurrying figures, a raftsman, and slanting rain over everything
     const X0 = 2, X1 = 34, Y0 = 3, Y1 = 95, h = (i, j) => { const s = Math.sin(i * 127.1 + j * 311.7) * 43758.5; return s - Math.floor(s); };
@@ -960,36 +999,82 @@ function drawShellBack(c) {
   const xa = OX + W + 6, xb = VW - 4;
   const quad = (x0, x1, f0, f1, col) => poly(c, [[x0, yAt(x0, f0)], [x1, yAt(x1, f0)], [x1, yAt(x1, f1)], [x0, yAt(x0, f1)]], col);
   const BOOK = ['#2f3a4e', '#3d5243', '#b98a3e', '#9c4a38', '#ddd3c0', '#3a3a3e', '#8a9a80', '#6e2e38', '#c9b48e', '#4a5a6e'];
+  // light comes from the window (left): each spine is rounded from a lit edge to a shaded one, with cloth grain
   const book = (x, w, h, f, col, band) => {
-    quad(x, x + w, f - h, f, col);
-    quad(x + w - .8, x + w, f - h, f, mix(col, '#000000', .3));                     // shaded side of the spine
-    quad(x, x + w, f - h, f - h + .006, mix(col, '#ffffff', .25));                  // top edge catching the light
-    if (band && w > 2.4) { quad(x + .4, x + w - .9, f - h * .72, f - h * .72 + .006, '#c8a84e'); quad(x + .4, x + w - .9, f - h * .3, f - h * .3 + .005, mix(col, '#ffffff', .18)); }
+    quad(x + w, x + w + 1.4, f - h + .012, f, 'rgba(10,8,6,.22)');                  // soft shadow on the wall
+    const n = Math.max(3, Math.round(w / .5));
+    for (let i = 0; i < n; i++) {
+      const u = (i + .5) / n, k = u < .3 ? mix(col, '#ffffff', .24 * (1 - u / .3)) : mix(col, '#000000', .42 * ((u - .3) / .7) ** 1.3);
+      quad(x + w * i / n, x + w * (i + 1) / n + .06, f - h, f, k);
+    }
+    for (let j = 0; j < 14; j++) { const fx = x + .2 + hash(x * 97 + j) * (w - .5), ff = f - h + hash(x * 31 + j * 7) * h; r(c, fx, yAt(fx, ff), 1, 1, rgba(hash(j * 3 + x) < .5 ? '#000000' : '#ffffff', .08)); }
+    quad(x, x + w, f - h, f - h + .006, mix(col, '#ffffff', .32));                  // top edge catching the light
+    quad(x, x + w, f - .009, f, 'rgba(0,0,0,.22)');                                 // contact shade on the shelf
+    if (band && w > 2.4) {
+      quad(x + .4, x + w - .9, f - h * .8, f - h * .8 + .005, '#d8b85a'); quad(x + .4, x + w - .9, f - h * .2, f - h * .2 + .005, '#d8b85a');
+      quad(x + .5, x + w - 1, f - h * .62, f - h * .44, mix(col, '#000000', .35)); quad(x + .7, x + w - 1.2, f - h * .56, f - h * .54, '#c8a84e');   // title label
+    }
     return x + w + .3;
   };
   const row = (x, f, specs) => { for (const [w, h, ci, band] of specs) x = book(x, w, h, f, BOOK[ci], band); return x; };
   const leaning = (x, w, h, f, col) => { poly(c, [[x, yAt(x, f)], [x + w, yAt(x + w, f)], [x + w + 3, yAt(x + w + 3, f - h)], [x + 3, yAt(x + 3, f - h)]], col);
     poly(c, [[x + w - .8, yAt(x + w - .8, f)], [x + w, yAt(x + w, f)], [x + w + 3, yAt(x + w + 3, f - h)], [x + w + 2.2, yAt(x + w + 2.2, f - h)]], mix(col, '#000000', .3)); };
   const flat = (x, f, specs) => specs.forEach(([L, ci, dx], j) => { quad(x + dx, x + dx + L, f - (j + 1) * .02, f - j * .02, BOOK[ci]); quad(x + dx, x + dx + L, f - (j + 1) * .02, f - (j + 1) * .02 + .004, mix(BOOK[ci], '#ffffff', .25)); });
-  const shelf = f => { quad(xa, xb, f + .014, f + .034, 'rgba(0,0,0,.28)'); quad(xa, xb, f, f + .014, '#7a5638'); quad(xa, xb, f, f + .004, '#9a7048'); };
+  const shelf = f => {
+    quad(xa, xb, f + .014, f + .04, 'rgba(0,0,0,.3)');                              // shadow under the board
+    quad(xa, xb, f, f + .014, '#7a5638'); quad(xa, xb, f + .009, f + .014, '#5e4129');   // front face, darker lower half
+    for (let k = 0; k < 7; k++) { const gx2 = xa + hash(f * 1000 + k) * (xb - xa - 8); quad(gx2, gx2 + 3 + hash(k + f * 99) * 6, f + .005 + (k % 2) * .003, f + .007 + (k % 2) * .003, '#6a4a30'); }   // grain
+    quad(xa, xb, f, f + .003, '#b08454');                                           // lit top edge
+  };
+  // a rounded ceramic: dark body, lit side, highlight
+  const pot = (x, y, rx, ry, col) => { ell(c, x, y, rx, ry, mix(col, '#000000', .3)); ell(c, x - rx * .2, y - ry * .05, rx * .78, ry * .9, col); ell(c, x - rx * .45, y - ry * .2, rx * .28, ry * .5, mix(col, '#ffffff', .4)); };
   const F = [.28, .45, .62, .79];
   F.forEach(shelf);
   // top shelf: a trailing plant, then a run of hardbacks
-  quad(xa + 2, xa + 8, F[0] - .05, F[0], '#d8d2c8'); quad(xa + 2, xa + 8, F[0] - .05, F[0] - .044, '#ece6da');
-  for (let k = 0; k < 9; k++) { const x = xa + 3 + (k % 3) * 2, y = yAt(x, F[0] - .05 + k * .022); ell(c, x + Math.sin(k) * 1.2, y, 1.6, 1.1, k % 2 ? '#4f8a50' : '#3e7046'); }
+  quad(xa + 2, xa + 8, F[0] - .05, F[0], '#d8d2c8'); quad(xa + 6, xa + 8, F[0] - .05, F[0], '#b4aca0'); quad(xa + 2, xa + 3.4, F[0] - .05, F[0], '#ece8e0');
+  quad(xa + 1.6, xa + 8.4, F[0] - .054, F[0] - .046, '#f2eee6'); quad(xa + 2, xa + 8, F[0] - .009, F[0], 'rgba(0,0,0,.2)');
+  for (let k = 0; k < 11; k++) { const x = xa + 3 + (k % 3) * 2, y = yAt(x, F[0] - .05 + k * .02), col = k % 3 === 0 ? '#5a9a58' : k % 3 === 1 ? '#3e7046' : '#2f5a38'; ell(c, x + Math.sin(k) * 1.2, y, 1.6, 1.1, col); r(c, x + Math.sin(k) * 1.2 - 1, y - .6, 1, 1, '#7ab870'); }
   row(xa + 12, F[0], [[2.6, .1, 0, 1], [3.2, .115, 7, 1], [2.2, .095, 4, 0], [3, .11, 2, 1], [2.4, .1, 6, 0]]);
   // second shelf: a long run, one book leaning, a small ceramic vase
   const e1 = row(xa + 2, F[1], [[2.4, .1, 3, 1], [3, .112, 0, 1], [2.2, .098, 8, 0], [3.4, .116, 1, 1], [2.6, .104, 5, 1], [2.2, .094, 4, 0]]);
   leaning(e1 + .2, 2.6, .1, F[1], BOOK[9]);
-  const vx = xb - 5; ell(c, vx, yAt(vx, F[1] - .035), 2, 3.2, '#cfc6b6'); ell(c, vx - .6, yAt(vx, F[1] - .045), .7, 1.4, '#ece6da'); r(c, vx - .8, yAt(vx, F[1] - .075), 1.6, 1.4, '#cfc6b6');
+  const vx = xb - 5; ell(c, vx + 1.5, yAt(vx, F[1] - .03), 1.6, 3, 'rgba(10,8,6,.2)'); pot(vx, yAt(vx, F[1] - .035), 2.2, 3.3, '#cfc6b6');
+  r(c, vx - .8, yAt(vx, F[1] - .078), 1.8, 1.6, '#bfb6a6'); r(c, vx - .8, yAt(vx, F[1] - .078), 1, 1.6, '#e8e2d6'); r(c, vx - 1.1, yAt(vx, F[1] - .082), 2.4, .8, '#ece6da');
   // third shelf: a horizontal stack, a framed photo, three upright books
   flat(xa + 2, F[2], [[11, 3, 0], [10, 4, .6], [12, 0, -.4]]);
-  quad(xa + 16, xa + 22, F[2] - .075, F[2], '#141416'); quad(xa + 16.8, xa + 21.2, F[2] - .067, F[2] - .008, '#f4f0ea'); quad(xa + 17.4, xa + 20.6, F[2] - .04, F[2] - .014, '#8aa0b0');
+  quad(xa + 22, xa + 23.4, F[2] - .072, F[2], 'rgba(10,8,6,.22)');
+  quad(xa + 16, xa + 22, F[2] - .075, F[2], '#141416'); quad(xa + 16, xa + 16.6, F[2] - .075, F[2], '#3a3a40');
+  quad(xa + 16.8, xa + 21.2, F[2] - .067, F[2] - .008, '#f4f0ea'); quad(xa + 16.8, xa + 21.2, F[2] - .067, F[2] - .062, '#c8c2b6');
+  quad(xa + 17.4, xa + 20.6, F[2] - .05, F[2] - .014, '#9ab4c8'); quad(xa + 17.4, xa + 20.6, F[2] - .028, F[2] - .014, '#5a7a68');
+  poly(c, [[xa + 17.4, yAt(xa + 17.4, F[2] - .028)], [xa + 18.8, yAt(xa + 18.8, F[2] - .046)], [xa + 20.6, yAt(xa + 20.6, F[2] - .03)]], '#6a7e96');
   row(xa + 25, F[2], [[2.8, .108, 1, 1], [2.4, .1, 2, 0], [3.2, .114, 7, 1]]);
   // bottom shelf: books held by a black bookend, and a low ceramic bowl
   const e3 = row(xa + 2, F[3], [[3, .112, 5, 1], [2.4, .1, 8, 0], [2.8, .108, 0, 1], [2.2, .096, 6, 0], [3.4, .118, 3, 1]]);
   quad(e3 + .3, e3 + 1.3, F[3] - .07, F[3], '#141416');
-  const bx = xb - 7; ell(c, bx, yAt(bx, F[3] - .018), 4, 2, '#2a2a2e'); ell(c, bx, yAt(bx, F[3] - .028), 3.4, .9, '#4a4a52');
+  const bx = xb - 7; ell(c, bx + 1.5, yAt(bx, F[3] - .01), 4, 1.2, 'rgba(10,8,6,.25)'); ell(c, bx, yAt(bx, F[3] - .018), 4, 2, '#1e1e22');
+  ell(c, bx - 1, yAt(bx, F[3] - .02), 2.6, 1.4, '#34343a'); ell(c, bx, yAt(bx, F[3] - .03), 3.6, .9, '#5a5a62'); ell(c, bx + .4, yAt(bx, F[3] - .03), 2.8, .5, '#2a2a2e');
+  // below the shelves, an acoustic guitar stands against the wall in the shade
+  const gx = xa + 13, gy = f => yAt(gx, f), gs = (gy(1) - gy(0)) / 1;                  // wall height in pixels here
+  ell(c, gx + 1, gy(.985), 7, 1.2, 'rgba(0,0,0,.25)');                                  // contact shadow on the floor
+  ell(c, gx, gy(.925), 6, gs * .058, '#6e4528'); ell(c, gx, gy(.84), 4.6, gs * .042, '#6e4528');   // lower and upper bout
+  ell(c, gx - 1.2, gy(.915), 3.4, gs * .04, '#84552f'); ell(c, gx - .8, gy(.835), 2.4, gs * .028, '#84552f');   // lit spruce top
+  ell(c, gx + 1.4, gy(.93), 3.4, gs * .045, 'rgba(30,16,8,.45)'); ell(c, gx + 1, gy(.845), 2.4, gs * .03, 'rgba(30,16,8,.4)');   // shaded right side of the body
+  ell(c, gx, gy(.872), 1.9, 1.9, 'rgba(232,210,170,.2)'); ell(c, gx, gy(.872), 1.5, 1.5, '#24170f');   // rosette and sound hole
+  r(c, gx - 2, gy(.95), 4, 1, '#2e1e14');                                               // bridge
+  r(c, gx - 1, gy(.62), 2, gy(.81) - gy(.62), '#3e281a'); r(c, gx - 1, gy(.62), 1, gy(.81) - gy(.62), '#4c3322');   // neck
+  r(c, gx - 1.5, gy(.575), 3, gy(.62) - gy(.575), '#2e1e14');                          // headstock
+  for (const f of [.585, .605]) { r(c, gx - 2.5, gy(f), 1, 1, '#9a9286'); r(c, gx + 1.5, gy(f), 1, 1, '#9a9286'); }   // tuners
+  for (const dx of [-.5, .5]) strokePath(c, [[gx + dx, gy(.95)], [gx + dx, gy(.62)]], 'rgba(220,214,200,.35)', .5);   // strings
+  // a pair of boxing gloves hung by their laces from the underside of the bottom shelf
+  const gl = (x, f) => [x, yAt(x, f)], [px0, py0] = gl(xb - 9, F[3] + .036);
+  for (const [dx, f1] of [[-2.5, F[3] + .075], [2.5, F[3] + .09]]) { const [lx, ly] = gl(xb - 9 + dx, f1); strokePath(c, [[px0, py0], [lx, ly]], '#cfc6b6'); }
+  for (const [x, f, col] of [[xb - 11.5, F[3] + .09, '#7a2a26'], [xb - 6.5, F[3] + .105, '#6c2522']]) {
+    const [cx2, cy2] = gl(x, f), cs = yAt(x, .03) - yAt(x, 0);
+    r(c, cx2 - 2, cy2 - cs * .9, 4, cs * .35, '#d8d0c2');                               // white cuff
+    ell(c, cx2, cy2 + cs * .4, 2.8, cs * 1.1, col); ell(c, cx2 - .8, cy2 + cs * .2, 1.2, cs * .6, mix(col, '#ffffff', .18));   // glove and its sheen
+    ell(c, cx2 + 2, cy2 + cs * .1, 1.1, cs * .45, mix(col, '#000000', .2));             // the thumb
+    ell(c, cx2 + .9, cy2 + cs * .75, 1.6, cs * .55, mix(col, '#000000', .32)); r(c, cx2 - 1.4, cy2 + cs * .05, 1, 1, mix(col, '#ffffff', .45));   // shade and a glint
+  }
 }
 
 function drawShellFront(c) {
@@ -1054,6 +1139,7 @@ function render(t) {
   drawEmissive(o, t, hover || (openId && SPOTS.find(s => s.id === openId)));
   oc.clearRect(0, 0, VW, VH);
   oc.drawImage(LITB, 0, 0);
+  drawArtLive(oc, t);
   oc.drawImage(IN, OX, OY);
   oc.drawImage(LITF, Math.round(-PX * 3), Math.round(-PY * 1.5));
   oc.save(); oc.translate(OX, OY); drawHover(oc, t, hover); oc.restore();
@@ -1092,7 +1178,7 @@ function aim(id) {
   const nav = NAV_ONLY.find(q => q.id === id), s = SPOTS.find(q => q.id === (nav ? nav.at : id)), pb = panelBox();
   const aw = portrait ? vw : vw - pb.w, ah = portrait ? vh - pb.h - HEAD : vh - HEAD;
   goal.fx = OX + s.x + s.w / 2; goal.fy = OY + s.y + s.h / 2;
-  goal.z = clamp(Math.min(aw * .45 / (s.w * s0), ah * .5 / (s.h * s0)), 1, 3);   // keep some of the room around small objects
+  goal.z = clamp(Math.min(aw * .55 / (s.w * s0), ah * .55 / (s.h * s0)), 1, 1.8);   // frame the object with some of the room around it; never closer than 1.8x
   goal.p = 1;
 }
 function place() {
@@ -1102,7 +1188,7 @@ function place() {
   const axp = closed.x + (opened.x - closed.x) * cur.p, ayp = closed.y + (opened.y - closed.y) * cur.p;
   let ox = axp - cur.fx * s, oy = ayp - cur.fy * s;
   const right = portrait ? vw : vw - pb.w * cur.p;     // the scene may slide under the open panel
-  ox = VW * s > vw ? clamp(ox, right - VW * s, 0) : (vw - VW * s) / 2;
+  ox = VW * s > right ? clamp(ox, right - VW * s, 0) : (right - VW * s) / 2;   // slide whenever the room is wider than the space beside the panel
   if (!portrait || cur.p > 0) oy = clamp(oy, Math.min(0, vh - VH * s), portrait ? HEAD : 0);
   xf = { ox, oy, s };
   cv.style.transform = `translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) scale(${s.toFixed(4)})`;
@@ -1177,41 +1263,104 @@ function setMode(isLofi, save) {
   else { layout(); sync(); cur = { ...goal }; if (master && soundOn) master.gain.setTargetAtTime(.35, AC.currentTime, .4); }
 }
 modeBtn.addEventListener('click', () => setMode(!lofi(), true));
-// ---------- optional soundscape: river, birds by day, crickets at night (generated in the browser, off until asked) ----------
+// ---------- optional soundscape: a soft ambient mix generated in the browser, off until asked ----------
+// River and wind (filtered noise that moves slowly), a warm pad drifting through quiet chords, birds by day and crickets at
+// night, all in a light reverb. It fades in and out, pauses while the tab is hidden and remembers the visitor's choice.
 const soundBtn = document.getElementById('sound');
-let AC = null, master = null, soundOn = false;
+let AC = null, master = null, wet = null, dry = null, bus = null, soundOn = false, padNodes = [], chordI = 0;
+const VOL = .32;
+function noiseBuf(sec, kind) {
+  const len = AC.sampleRate * sec, buf = AC.createBuffer(2, len, AC.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch); let last = 0, b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      if (kind === 'brown') { last = (last + .02 * w) / 1.02; d[i] = last * 3.5; }
+      else { b0 = .997 * b0 + w * .029591; b1 = .985 * b1 + w * .032534; b2 = .95 * b2 + w * .048056; d[i] = (b0 + b1 + b2 + w * .1848) * .25; }   // pink
+    }
+  }
+  return buf;
+}
+function loop(buf, ...chain) { const s = AC.createBufferSource(); s.buffer = buf; s.loop = true; let n = s; for (const c of chain) { n.connect(c); n = c; } s.start(); return n; }
+function lfo(param, rate, depth) { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = rate; g.gain.value = depth; o.connect(g); g.connect(param); o.start(); }
+function filt(type, f, q = .7) { const b = AC.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+function gain(v) { const g = AC.createGain(); g.gain.value = v; return g; }
 function startSound() {
   AC = new (window.AudioContext || window.webkitAudioContext)();
-  master = AC.createGain(); master.gain.value = 0; master.connect(AC.destination);
-  const len = AC.sampleRate * 4, buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
-  let last = 0; for (let i = 0; i < len; i++) { last = (last + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }   // brown noise
-  const src = AC.createBufferSource(); src.buffer = buf; src.loop = true;
-  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 650;
-  const rg = AC.createGain(); rg.gain.value = .55;
-  src.connect(lp); lp.connect(rg); rg.connect(master); src.start();
-  setInterval(soundTick, 250);
+  const comp = AC.createDynamicsCompressor(); comp.threshold.value = -24; comp.ratio.value = 3; comp.connect(AC.destination);
+  master = gain(0); master.connect(comp);
+  dry = gain(1); dry.connect(master);
+  // a light room reverb from a generated, decaying impulse
+  const ir = AC.createBuffer(2, AC.sampleRate * 2.6, AC.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3.2); }
+  const conv = AC.createConvolver(); conv.buffer = ir; wet = gain(.35); conv.connect(wet); wet.connect(master);
+  bus = gain(1); bus.connect(conv); bus.connect(dry);                          // everything sent here also gets the reverb
+  const brown = noiseBuf(6, 'brown'), pink = noiseBuf(6, 'pink');
+  // river: a low rush whose brightness moves slowly, and a quieter babble on top
+  const rl = filt('lowpass', 520); lfo(rl.frequency, .05, 140);
+  loop(brown, rl, gain(.5)).connect(dry);
+  const bb = filt('bandpass', 1300, 1.2), bg = gain(.05); lfo(bg.gain, .23, .03); lfo(bb.frequency, .11, 300);
+  loop(pink, bb, bg).connect(dry);
+  // wind in the trees: soft swells every few seconds
+  const wb = filt('bandpass', 700, .6), wg = gain(.07); lfo(wg.gain, .07, .05); lfo(wb.frequency, .03, 250);
+  loop(pink, wb, wg).connect(bus);
+  // warm pad: detuned triangles under a low-pass, drifting through four quiet chords
+  const pf = filt('lowpass', 900, .5), pg = gain(.022); lfo(pf.frequency, .04, 250); lfo(pg.gain, .09, .006);
+  pf.connect(pg); pg.connect(bus);
+  for (let v = 0; v < 4; v++) for (const det of [-5, 5]) { const o = AC.createOscillator(); o.type = 'triangle'; o.detune.value = det; o.connect(pf); o.start(); padNodes.push(o); }
+  setChord(true); setInterval(() => setChord(false), 16000);
+  document.addEventListener('visibilitychange', () => { if (!AC) return; if (document.hidden) AC.suspend(); else if (soundOn) AC.resume(); });
+  setInterval(soundTick, 300);
 }
-function chirp(f0, f1, dur, vol) {
-  const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
-  o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
-  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .02);
+const CHORDS = [[146.83, 220, 277.18, 329.63], [123.47, 185, 246.94, 293.66], [98, 146.83, 246.94, 293.66], [110, 164.81, 220, 277.18]];   // D(add9), Bm7, Gmaj7, A
+function setChord(now) {
+  const ch = CHORDS[chordI++ % CHORDS.length], t = AC.currentTime;
+  padNodes.forEach((o, i) => { const f = ch[i >> 1] * (ENV.stars > .5 ? .5 : 1) * (i >> 1 === 3 && ENV.stars > .5 ? 2 : 1); if (now) o.frequency.value = f; else o.frequency.setTargetAtTime(f, t, 2.5); });
+}
+// a bird phrase: a few short notes with vibrato, panned somewhere in the trees
+function bird(vol) {
+  const pan = AC.createStereoPanner ? AC.createStereoPanner() : null, out = gain(1);
+  if (pan) { pan.pan.value = Math.random() * 1.6 - .8; out.connect(pan); pan.connect(bus); } else out.connect(bus);
+  const base = 2200 + Math.random() * 1600, n = 2 + (Math.random() * 5 | 0), gap = .09 + Math.random() * .08;
+  for (let k = 0; k < n; k++) {
+    const t = AC.currentTime + k * gap, d = .06 + Math.random() * .07, o = AC.createOscillator(), g = AC.createGain(), vib = AC.createOscillator(), vg = AC.createGain();
+    const f = base * (1 + (Math.random() - .5) * .35);
+    o.frequency.setValueAtTime(f, t); o.frequency.linearRampToValueAtTime(f * (.85 + Math.random() * .35), t + d);
+    vib.frequency.value = 28 + Math.random() * 20; vg.gain.value = f * .03; vib.connect(vg); vg.connect(o.frequency);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g); g.connect(out); o.start(t); vib.start(t); o.stop(t + d + .02); vib.stop(t + d + .02);
+  }
+}
+function cricket(vol) {
+  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(), am = AC.createOscillator(), ag = AC.createGain();
+  o.frequency.value = 4300 + Math.random() * 300; am.frequency.value = 30; ag.gain.value = vol * .5;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol * .5, t + .02); g.gain.linearRampToValueAtTime(0, t + .35);
+  am.connect(ag); ag.connect(g.gain); o.connect(g); g.connect(dry); o.start(t); am.start(t); o.stop(t + .4); am.stop(t + .4);
 }
 function soundTick() {
   if (!soundOn || !AC || lofi() || document.hidden) return;
   const day = 1 - ENV.lamp, night = ENV.stars;
-  if (day > .3 && Math.random() < .16 * day) {
-    const n = 2 + (Math.random() * 4 | 0), base = 2600 + Math.random() * 2200;
-    for (let i = 0; i < n; i++) setTimeout(() => chirp(base * (1 + Math.random() * .2), base * (.7 + Math.random() * .6), .08 + Math.random() * .08, .05 * day), i * 110);
-  }
-  if (night > .3 && Math.random() < .5 * night) for (let i = 0; i < 3; i++) setTimeout(() => chirp(4400, 4300, .03, .018 * night), i * 60);
+  if (day > .3 && SEASON !== SEASONS.winter && Math.random() < .07 * day) bird(.022 * day);
+  if (night > .3 && SEASON !== SEASONS.winter && Math.random() < .35 * night) cricket(.012 * night);
 }
-soundBtn?.addEventListener('click', () => {
-  if (!AC) startSound();
-  soundOn = !soundOn;
-  master.gain.setTargetAtTime(soundOn ? .35 : 0, AC.currentTime, .4);
-  soundBtn.setAttribute('aria-pressed', String(soundOn)); soundBtn.textContent = soundOn ? 'Sound on' : 'Sound';
-});
+function setSound(on, save) {
+  if (on && !AC) startSound();
+  soundOn = on;
+  if (AC) { if (on) AC.resume(); master.gain.setTargetAtTime(on && !lofi() ? VOL : 0, AC.currentTime, on ? 1.2 : .4); }
+  soundBtn.setAttribute('aria-pressed', String(on)); soundBtn.textContent = on ? 'Sound off' : 'Sound on';
+  if (save) try { localStorage.setItem('jn-sound', on ? 'on' : 'off'); } catch (e) {}
+}
+let pending = null;                       // a remembered 'on' waiting for the first interaction
+soundBtn?.addEventListener('click', () => { if (pending) { pending(); setSound(false, true); return; } setSound(!soundOn, true); });
+// browsers only allow sound after a click or key press: if the visitor had it on, it returns with their first interaction
+try {
+  if (soundBtn && localStorage.getItem('jn-sound') === 'on') {
+    soundBtn.textContent = 'Sound off'; soundBtn.setAttribute('aria-pressed', 'true');
+    const resume = e => { if (e.target === soundBtn) return; pending(); setSound(true, false); };
+    pending = () => { removeEventListener('pointerdown', resume); removeEventListener('keydown', resume); pending = null; };
+    addEventListener('pointerdown', resume); addEventListener('keydown', resume);
+  }
+} catch (e) {}
 // keyboard users can jump straight to the text version
 document.getElementById('skip')?.addEventListener('click', e => { e.preventDefault(); setMode(true, true); const m = document.getElementById('lofi'); m.setAttribute('tabindex', '-1'); m.focus(); });
 
@@ -1230,7 +1379,7 @@ updateTimeChip(); setInterval(updateTimeChip, 10000);   // also runs while the a
 function frame(now) {
   requestAnimationFrame(frame);
   if (lofi() || document.hidden || now - last < (vw < 760 ? 50 : 30)) return;   // about 20 fps on phones, 33 on larger screens
-  const dt = Math.min(.1, (now - last) / 1000); last = now;
+  const rawDt = (now - last) / 1000, dt = Math.min(.1, rawDt); last = now;
   const t = reduce ? 4 : (now - t0) / 1000;
   if (!FIXED && now - envT > 30000) { envT = now; updateEnv(); }
   if (reduce || !PARALLAX) { PX = PY = 0; }
@@ -1239,7 +1388,7 @@ function frame(now) {
     PX += (tx - PX) * kp; PY += (ty - PY) * kp;
   }
   DDX = stillMode ? 0 : -Math.round(PX); DDY = stillMode ? 0 : -Math.round(PY * .6);
-  const k = 1 - Math.exp(-dt * 5.5);
+  const k = 1 - Math.exp(-Math.min(.4, rawDt) * 5.5);                         // the camera uses real time, so it arrives on time on slow devices too
   for (const key of ['fx', 'fy', 'z', 'p']) cur[key] += (goal[key] - cur[key]) * k;
   place();
   render(t);
