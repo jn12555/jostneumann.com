@@ -201,7 +201,7 @@ h2.sub { margin-top: 1.75rem; }
 }
 .scene-disclaimer a { pointer-events: auto; color: #d8d0c4; text-decoration: underline; }
 .scene-disclaimer {
-  font-size: .72rem; color: #d8d0c4; max-width: calc(100% - 320px); padding: .3rem .6rem; border-radius: 6px;
+  font-size: .72rem; color: #d8d0c4; max-width: min(640px, calc(100% - 400px)); padding: .3rem .6rem; border-radius: 6px;   /* clear of the chips on the right */
   background: rgba(14, 11, 18, .62); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
 }
 body.panel-open .scene-disclaimer { opacity: 0; }
@@ -238,6 +238,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 /* ---------- phone / portrait ---------- */
 @media (max-width: 760px), (max-aspect-ratio: 1/1) {
   html.js:not(.lofi) .top .sections { display: none; }
+  html.js:not(.lofi) .top { background: linear-gradient(var(--bg) 55%, rgba(18, 15, 22, 0)); }   /* keeps the name legible over the zoomed scene */
   .intro { left: 16px; right: 16px; bottom: auto; top: calc(var(--band-bottom, 50vh) + 12px); max-width: none; padding: 14px 16px 12px; }
   .intro-hint { display: none; }
   .scene::after {
@@ -261,6 +262,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
   body.panel-open .touch-menu { opacity: 0; pointer-events: none; }
   .touch-menu a:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .scene-disclaimer { top: var(--disc-top, auto); bottom: auto; left: 20px; right: 20px; max-width: 560px; }
+  .dock { top: var(--dock-top, auto); bottom: auto; left: 16px; right: auto; flex-wrap: wrap; }
   .panel {
     top: auto; left: 0; width: auto; height: 62vh;
     border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0;
@@ -275,6 +277,12 @@ body.panel-open .scene-disclaimer { opacity: 0; }
   .sections a { font-size: 1.2rem; padding: .25rem .4rem; }
 }
 
+/* phones held sideways: a short screen with a narrow panel */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  .panel-kicker { white-space: nowrap; font-size: 1.25rem; }
+  #close .long { display: none; }
+  .scene-disclaimer { font-size: .66rem; }
+}
 @media (prefers-reduced-motion: reduce) {
   .panel, .intro, .tip, .touch-menu { transition: none; }
   .intro-hint::after { animation: none; }

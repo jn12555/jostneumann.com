@@ -4,7 +4,7 @@
 // a lamp cone and soft shadows, and parallax between landscape, wall and desk. The window
 // looks out on a slow river under a mountain panorama with a mixed forest, a willow, wildflowers, mist, a heron and fireflies. On a
 // minimal desk, four objects open the sections of the plain (LO-FI) page in a panel: the curved screen (About),
-// the shelf (Experience), the tablet (CV) and the phone (Contact).
+// the shelf (Experience), the notebook (Writing) and the phone (Contact).
 (() => {
 'use strict';
 const W = 384, H = 216, TAU = Math.PI * 2;
@@ -108,7 +108,9 @@ Object.assign(SEASONS.summer, { leaves: ['#3e7a3a', '#4f8e42', '#2f6a34', '#5a9a
 Object.assign(SEASONS.autumn, { leaves: ['#d8742e', '#e8a03a', '#b84a2a', '#c8902a', '#8a9a3a'], bloom: ['#b8a0d8', '#e8d8a0', '#c8603a'], blossom: null });
 Object.assign(SEASONS.winter, { leaves: null, bloom: null, blossom: null });
 const SEASON_PARAM = new URLSearchParams(location.search).get('season');
+const RAIN_ON = new URLSearchParams(location.search).get('rain') !== '0';
 const SEASON = SEASONS[SEASON_PARAM] || SEASONS[(m => m === 11 || m < 2 ? 'winter' : m < 5 ? 'spring' : m < 8 ? 'summer' : 'autumn')(new Date().getMonth())];
+const RAIN = RAIN_ON && !SEASON.snow;                                            // soft rain outside, except in winter, when it snows
 
 // ---------- parallax: the landscape, the wall and the desk move a little with the pointer ----------
 // switched off on 23 October 2026: with the glass wall the shift moved almost the whole picture
@@ -150,7 +152,7 @@ const GEO = {
   clip: [0, 0, 384, 192], outDY: 0,                         // glass opening and vertical shift of the view
   panesX: [[3, 95], [98, 191], [194, 287], [290, 381]], glassBottom: 146, sill: 146, desk: [147, 155],
   lamp: { bulb: [323, 103, 10], glow: [328, 105], light: [328, 108], cone: [[322, 103], [334, 103], [356, 150], [298, 150]], pool: [330, 150] },
-  kbd: [254, 152], tablet: [162, 118, 26, 20], phone: [317, 126, 9, 15], mug: [144, 136],
+  kbd: [254, 152], phone: [317, 126, 9, 15], mug: [144, 136],
   clock: { x: 330, y: 22, h: 4.5, m: 7, s: 7.5, cover: 0, face: '#ece6da' }, shadows: true
 };
 const monCol = i => { const u = (i + .5) / MON.w * 2 - 1, h = MON.h0 * (1 + MON.k * u * u); return { top: MON.cy - h / 2, h }; };
@@ -191,6 +193,10 @@ for (let i = 0; i < 9; i++) FERNS.push({ x: 20 + rnd() * (W - 40), y: 186, s: .8
 const MIST = [[20, 112, 90, .16], [160, 118, 110, .12], [300, 110, 80, .1]];
 const DECID = Array.from({ length: 22 }, (_, i) => ({ x: rnd() * W, r: 3 + rnd() * 3.5, c: i }));
 const PARTS = Array.from({ length: 60 }, () => ({ x: rnd(), y: rnd(), v: rnd(), p: rnd() * TAU }));
+// soft rain: streaks falling past the glass, rings on the river, drops sliding down the panes
+const DROPS = Array.from({ length: 150 }, () => ({ x: rnd(), y: rnd(), v: rnd(), l: 2 + (rnd() * 3 | 0) }));
+const RINGS = Array.from({ length: 16 }, () => ({ x: 4 + rnd() * (W - 8), y: RIV0 + 3 + rnd() * (RIV1 - RIV0 - 6), p: rnd() * 3, d: 1.6 + rnd() * 1.6 }));
+const GLASS = Array.from({ length: 46 }, () => ({ x: 4 + rnd() * (W - 8), y: rnd() * 186, v: rnd() < .3 ? 2 + rnd() * 5 : 0, p: rnd() * 40 }));
 const MOTES = Array.from({ length: 34 }, () => ({ x: rnd(), y: rnd(), v: 2 + rnd() * 4, p: rnd() * TAU }));
 const FROST = [];
 for (const [x, y, w, h] of PANES) for (let i = 0; i < 60; i++) {
@@ -472,6 +478,10 @@ function drawOutside(c, t) {
   if (body && body.sun) { glow(c, body.x, body.y, 40, mix('#ffb070', '#fff4d8', body.lift), .5); ell(c, body.x, body.y, 4.5, 4.5, mix('#ffb070', '#fff8e8', body.lift)); }
   else if (body) { glow(c, body.x, body.y, 26, '#c8d0f0', .25); ell(c, body.x, body.y, 3.5, 3.5, '#e8eaf4'); ell(c, body.x + 1.6, body.y - .7, 2.8, 2.8, E.skyMid); }
   glow(c, W * .55, 88, 120, E.glowCol, E.glowA);
+  if (RAIN) {                                                                        // a soft overcast for the rain
+    c.fillStyle = rgba(mix(E.skyLow, '#8e949e', .55), .38); c.fillRect(-10, -10, W + 20, SKY + 14);
+    for (let k = 0; k < 6; k++) { const cx = ((k * 83 + t * (1.2 + k * .3)) % (W + 120)) - 60; ell(c, cx, 10 + k * 9, 70 + k * 8, 7, rgba(mix(E.skyMid, '#a4a8b2', .5), .22)); }
+  }
   for (let fl = 0; fl < 2; fl++) {                                                   // two flocks of birds
     const bp = ((t + fl * 6) % 13) / 7, bird = mix('#2a2438', '#3a3a48', 1 - E.lamp);
     if (bp < 1) for (let k = 0; k < 4; k++) {
@@ -545,7 +555,24 @@ function drawOutside(c, t) {
       r(c, x, y, 1, 1, `rgba(220,255,140,${a})`); glow(c, x, y, 4, '#d8ff80', .35 * a);
     }
   }
+  if (RAIN) {
+    const dim = 1 - E.shadeA * .5, [px, py] = off(1.1);
+    for (const q of RINGS) {                                                         // rings where drops hit the river
+      const ph = ((t + q.p) % q.d) / q.d, rr = .5 + ph * 4;
+      c.strokeStyle = rgba(E.ripple, (1 - ph) * .35 * dim); c.lineWidth = 1; c.beginPath(); c.ellipse(q.x + px, q.y + py, rr, rr * .35, 0, 0, TAU); c.stroke();
+    }
+    for (const q of DROPS) {                                                         // streaks, slightly slanted by a light wind
+      const y = ((q.y * 210 + t * (95 + q.v * 55)) % 210) - 12, x = ((q.x * (W + 30) + y * .22) % (W + 30)) - 15;
+      const a = (.16 + q.v * .16) * dim;
+      r(c, x + px, y + py, 1, q.l, `rgba(214,224,238,${a})`); r(c, x + px + 1, y + py + q.l, 1, 1, `rgba(214,224,238,${a * .6})`);
+    }
+  }
   c.fillStyle = 'rgba(12,14,22,.2)'; c.fillRect(0, 0, W, 192);              // tinted glass: dims the view a little for more contrast
+  if (RAIN) for (const g of GLASS) {                                               // drops on the glass, a few sliding down
+    const y = g.v ? (g.y + (t + g.p) * g.v) % 190 : g.y;
+    r(c, g.x, y, 1, 1, 'rgba(230,238,250,.45)'); r(c, g.x, y + 1, 1, 1, 'rgba(40,48,64,.25)');
+    if (g.v) r(c, g.x, y - 4, 1, 4, 'rgba(220,230,245,.12)');
+  }
   if (S.frost) for (const [x, y, a] of FROST) r(c, x, y, 1, 1, `rgba(232,240,255,${a * .5 * S.frost})`);
   c.restore();
 }
@@ -579,7 +606,7 @@ function drawDesk(c) {
   r(c, 0, 146, W, 1, '#d8ae80');
   r(c, 0, 156, W, 3, '#a47a52'); r(c, 0, 156, W, 1, '#e0b88a'); r(c, 0, 158, W, 1, '#6a4a30');
   // shadows on the desk
-  for (const [x, w] of [[94, 42], [138, 14], [164, 26], [196, 116], [314, 18], [338, 14], [356, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
+  for (const [x, w] of [[94, 42], [138, 14], [196, 116], [314, 18], [338, 14], [356, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
   // minimal desk lamp on the right: black stem, arm and a small head over the phone
   ell(c, 344, 149, 6, 1.6, '#2a2a2e'); r(c, 338, 149, 13, 1, '#18181c');
   r(c, 343, 100, 1, 49, '#2a2a2e'); r(c, 330, 100, 14, 1, '#2a2a2e');
@@ -623,10 +650,6 @@ function drawDesk(c) {
   }
   // minimal mouse
   ell(c, 299, 152, 2.6, 1.6, '#ecebe6'); r(c, 298, 151, 2, 1, '#ffffff');
-  // tablet on a slim stand, left of the screen (the CV)
-  ell(c, 176, 148, 9, 1.5, '#a4a8b0'); r(c, 167, 148, 18, 1, '#70747c');
-  r(c, 174, 139, 3, 9, '#9a9ea6'); r(c, 176, 139, 1, 9, '#7a7e86');
-  r(c, 160, 116, 30, 24, '#1a1c20'); r(c, 160, 116, 30, 1, '#34363c'); r(c, 162, 118, 26, 20, '#0e1014');
   // phone on an oak charging dock, right of the screen (contact)
   poly(c, [[314, 148], [330, 148], [328, 140], [316, 140]], '#b48a5e'); r(c, 314, 147, 16, 1, '#8a6440');
   r(c, 316, 124, 11, 19, '#141518'); r(c, 316, 124, 11, 1, '#34363c'); r(c, 317, 126, 9, 15, '#0e1014');
@@ -648,7 +671,6 @@ function drawLight(c) {
   glow(c, ...GEO.lamp.light, 140, '#ffa860', .8 * E.lamp);       // desk lamp
   glow(c, ...GEO.lamp.pool, 60, '#ffcf90', .45 * E.lamp);
   glow(c, MON.x + MON.w / 2, 112, 96, '#6a88c0', .38);           // the screen
-  glow(c, GEO.tablet[0] + GEO.tablet[2] / 2, GEO.tablet[1] + GEO.tablet[3] / 2, 26, '#9ae8d8', .07);   // the tablet's dark screen
   glow(c, ...GEO.kbd, 26, '#7a9ad0', .3);                        // screen light on the keyboard
   const sun = sunInfo(E);
   if (sun) {                                                     // the window, projected onto the sill and the desk by the sun
@@ -675,48 +697,11 @@ function drawVignette() {
 }
 function updateEnv() { ENV = envAt(hourNow()); drawLight(lx); drawVignette(); if (typeof updateShell === 'function') updateShell(); }
 
-// ---------- tablet: dots that keep re-forming the CV (in the manner of the dot print on the wall) ----------
-// 46 dots on the 26 x 20 screen move through six forms: the letters CV, a page of text, a portrait, a briefcase
-// (experience), a mortarboard (education) and a career timeline. Tone 0 dim, 1 cream, 2 mint accent.
-const TAB_N = 46, TAB_HOLD = 2.2, TAB_MOVE = 1.1;
-const tabAlong = (pts, n, tone) => {
-  const seg = []; let L = 0;
-  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push([pts[i - 1], pts[i], L, d]); L += d; }
-  return Array.from({ length: n }, (_, k) => { const q = L * k / Math.max(1, n - 1), [a, b, l0, d] = seg.find(z => q <= z[2] + z[3] + 1e-9) || seg[seg.length - 1], u = d ? (q - l0) / d : 0; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, tone]; });
-};
-const tabRing = (cx, cy, rx, ry, n, tone, a0 = 0, a1 = TAU) => Array.from({ length: n }, (_, k) => { const a = a0 + (a1 - a0) * k / (a1 - a0 >= TAU ? n : n - 1); return [cx + rx * Math.cos(a), cy + ry * Math.sin(a), tone]; });
-const tabFit = pts => { const out = pts.slice(0, TAB_N); while (out.length < TAB_N) out.push(pts[out.length % pts.length]); return out.sort((a, b) => a[0] - b[0] || a[1] - b[1]); };
-const TAB_SHAPES = [
-  // the letters C and V
-  tabFit([...tabAlong([[11, 5], [6, 5], [4, 7], [4, 13], [6, 15], [11, 15]], 20, 1), ...tabAlong([[14, 5], [18, 15], [22, 5]], 18, 2), ...tabAlong([[5, 17.5], [21, 17.5]], 8, 0)]),
-  // a page with a heading and lines of text
-  tabFit([...tabAlong([[7, 2], [19, 2], [19, 18], [7, 18], [7, 2]], 20, 0), ...tabAlong([[9, 5], [15, 5]], 5, 2), ...[7.5, 10, 12.5, 15].flatMap((y, i) => tabAlong([[9, y], [i % 2 ? 15 : 17, y]], 5, 1))]),
-  // a portrait: head and shoulders in a frame
-  tabFit([...tabRing(13, 7, 3, 3, 14, 1), ...tabRing(13, 18, 7, 5, 16, 1, Math.PI, TAU), ...tabAlong([[3, 18.5], [23, 18.5]], 6, 0), ...tabAlong([[19.5, 3], [23, 3]], 3, 2), ...tabAlong([[19.5, 5], [22, 5]], 3, 0)].slice(0, TAB_N)),
-  // a briefcase: experience
-  tabFit([...tabAlong([[4, 7], [22, 7], [22, 17], [4, 17], [4, 7]], 28, 1), ...tabAlong([[10, 7], [10, 4], [16, 4], [16, 7]], 8, 0), ...tabAlong([[4, 11], [22, 11]], 7, 0), ...[[12.5, 11], [13.5, 11], [13, 12]].map(([x, y]) => [x, y, 2])]),
-  // a mortarboard with its tassel: education
-  tabFit([...tabAlong([[13, 3], [23, 8], [13, 12], [3, 8], [13, 3]], 26, 1), ...tabAlong([[7, 10], [7, 15], [13, 17], [19, 15], [19, 10]], 14, 0), ...tabAlong([[21, 9], [21, 15]], 5, 2), [21, 16, 2]]),
-  // a career timeline: an axis with milestones that rise
-  tabFit([...tabAlong([[2, 16], [24, 16]], 16, 0), ...[[4, 13], [9, 11], [14, 9], [19, 6], [23, 4]].flatMap(([x, y], i) => [...tabRing(x, y, 1.3, 1.3, 4, i === 4 ? 2 : 1), ...tabAlong([[x, y + 1.5], [x, 15.5]], 2, 0)])])
-];
-function drawTabletDots(c, t, tx, ty, tw, th) {
-  r(c, tx, ty, tw, th, '#15171d');
-  const n = TAB_SHAPES.length, cyc = TAB_HOLD + TAB_MOVE, k = reduce ? 0 : Math.floor(t / cyc) % n, ph = reduce ? 0 : (t % cyc) - TAB_HOLD;
-  const a = TAB_SHAPES[k], b = TAB_SHAPES[(k + 1) % n], e = ph <= 0 ? 0 : (q => q < .5 ? 4 * q * q * q : 1 - Math.pow(-2 * q + 2, 3) / 2)(ph / TAB_MOVE);
-  const COL = ['#5f5b55', '#e9e3d6', '#7ff5d2'];
-  for (let i = 0; i < TAB_N; i++) {
-    const p0 = a[i], p1 = b[i], wob = e > 0 && e < 1 ? Math.sin(i * 1.7 + t * 6) * .6 * Math.sin(e * Math.PI) : 0;
-    const x = p0[0] + (p1[0] - p0[0]) * e + wob, y = p0[1] + (p1[1] - p0[1]) * e - wob * .5, tone = e < .5 ? p0[2] : p1[2];
-    if (x >= 0 && x < tw && y >= 0 && y < th) r(c, tx + x, ty + y, 1, 1, COL[tone]);
-  }
-}
-
 // ---------- emissive pass ----------
 let bootT = /[?&]og=1/.test(location.search) ? -30 : 0;   // the preview capture shows the screen fully on, with a keyword typed
 function drawEmissive(c, t, hover) {
   // sunbeams through the lower window and dust drifting in them
-  const sun = sunInfo(ENV);
+  const sun = sunInfo(ENV); if (sun && RAIN) sun.s *= .3;                       // the overcast softens the sunbeams
   if (sun) {
     c.globalCompositeOperation = 'lighter';
     const G0 = GEO.glassBottom, D1 = GEO.desk[1], span = D1 - G0;
@@ -754,10 +739,6 @@ function drawEmissive(c, t, hover) {
   c.globalCompositeOperation = 'source-over';
   // LEDs
   r(c, MON.x + MON.w - 5, MON.cy + MON.h0 / 2 + 2, 1, 1, '#e8f0ff');
-  // tablet: dots re-forming the CV
-  { const [tx, ty, tw, th] = GEO.tablet;
-    drawTabletDots(c, t, tx, ty, tw, th);
-    c.globalCompositeOperation = 'lighter'; glow(c, tx + tw / 2, ty + th / 2, 20, '#7ff5d2', .06); c.globalCompositeOperation = 'source-over'; }
   // phone: a short conversation and a pulsing notification
   { const [qx, qy, qw, qh] = GEO.phone;
     r(c, qx, qy, qw, qh, '#121a24');
@@ -852,7 +833,7 @@ const STILL_GEO = {
     clip: [44, 22, 85, 86], outDY: -6,
     panesX: [[44, 80], [92, 129]], glassBottom: 107, sill: 112, desk: [130, 152],
     lamp: { bulb: [307, 97, 10], glow: [312, 99], light: [312, 102], cone: [[306, 97], [318, 97], [334, 140], [290, 140]], pool: [313, 140] },
-    kbd: [248, 141], tablet: [165, 113, 28, 22], phone: [301, 116, 9, 15], mug: [110, 127],
+    kbd: [248, 141], phone: [301, 116, 9, 15], mug: [110, 127],
     clock: { x: 356.5, y: 33, h: 4.5, m: 7, s: 7.5, cover: 7.5, face: '#ebe2d0' }, shadows: false
   },
   mon: { x: 205, w: 87, cy: 95.7, h0: 41, k: .05 },
@@ -885,7 +866,7 @@ if (QS.get('export') === 'reference') {
   g.fillStyle = '#ff00ff'; for (const [x, y, w, h] of PANES) g.fillRect(x * K, y * K, w * K, h * K);
   g.fillStyle = '#000000';
   for (let i = 0; i < MON.w; i++) { const { top, h } = monCol(i); g.fillRect((MON.x + i) * K, Math.round(top * K), K, Math.round(h * K)); }
-  for (const [x, y, w, h] of [GEO.tablet, GEO.phone]) g.fillRect(x * K, y * K, w * K, h * K);
+  for (const [x, y, w, h] of [GEO.phone]) g.fillRect(x * K, y * K, w * K, h * K);
   ref.toBlob(b => fetch('http://localhost:8795/save?name=stills/cabin-office/reference.png', { method: 'POST', mode: 'no-cors', body: new Blob([b], { type: 'text/plain' }) })
     .then(() => console.log('reference saved')), 'image/png');
 }
@@ -1160,14 +1141,14 @@ function render(t) {
 const scene = document.getElementById('scene'), panel = document.getElementById('panel'), body = document.getElementById('panel-body');
 const kicker = document.getElementById('panel-title'), tip = document.getElementById('tip'), modeBtn = document.getElementById('mode');
 const HEAD = 56;
-let vw = 0, vh = 0, portrait = false, s0 = 1, cur = { fx: VW / 2, fy: 132, z: 1, p: 0 }, goal = { ...cur }, xf = { ox: 0, oy: 0, s: 1 };
+let fitShrink = 0, vw = 0, vh = 0, portrait = false, s0 = 1, cur = { fx: VW / 2, fy: 132, z: 1, p: 0 }, goal = { ...cur }, xf = { ox: 0, oy: 0, s: 1 };
 let hover = null, openId = null;
 
 function layout() {
   vw = innerWidth; vh = innerHeight;
   portrait = vw <= 760 || vw / vh <= 1;
   // portrait: a band under the header, leaving room below for the name and the section buttons
-  s0 = portrait ? Math.max(1, Math.min(vw / 262, (vh - HEAD - 380) / VH)) : Math.max(vw / VW, vh / VH);
+  s0 = portrait ? Math.max(.7, Math.min(vw / 262, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);
   document.documentElement.style.setProperty('--band-bottom', Math.round(HEAD + VH * s0) + 'px');
   stackPortrait();
   if (!openId) { goal.fx = portrait ? 215 + OX : VW / 2; goal.fy = portrait ? 128 : 132; }
@@ -1179,7 +1160,15 @@ function stackPortrait() {
     if (!portrait) return;
     const intro = document.getElementById('intro'), ib = intro ? intro.getBoundingClientRect().bottom : HEAD + VH * s0;
     html.style.setProperty('--menu-top', Math.round(ib + 14) + 'px');
-    requestAnimationFrame(() => html.style.setProperty('--disc-top', Math.round(document.querySelector('.touch-menu').getBoundingClientRect().bottom + 12) + 'px'));
+    requestAnimationFrame(() => {
+      html.style.setProperty('--disc-top', Math.round(document.querySelector('.touch-menu').getBoundingClientRect().bottom + 12) + 'px');
+      requestAnimationFrame(() => {
+        const d = document.querySelector('.scene-disclaimer'); if (!d) return;
+        const top = Math.round(d.getBoundingClientRect().bottom + 12), over = top + 44 - (vh - 10);
+        html.style.setProperty('--dock-top', top + 'px');                                  // the chips follow the disclaimer
+        if (over > 2 && s0 > .71 && fitShrink < 600) { fitShrink += over; layout(); cur = { ...goal, p: cur.p }; }   // too tall: shrink the scene band until all fits
+      });
+    });
   });
 }
 if (document.fonts) document.fonts.ready.then(stackPortrait);
@@ -1273,12 +1262,12 @@ function setMode(isLofi, save) {
   else { layout(); sync(); cur = { ...goal }; if (master && soundOn) master.gain.setTargetAtTime(.35, AC.currentTime, .4); }
 }
 modeBtn.addEventListener('click', () => setMode(!lofi(), true));
-// ---------- optional soundscape: a soft ambient mix generated in the browser, off until asked ----------
-// River and wind (filtered noise that moves slowly), a warm pad drifting through quiet chords, birds by day and crickets at
-// night, all in a light reverb. It fades in and out, pauses while the tab is hidden and remembers the visitor's choice.
+// ---------- soundscape: rain and nature only, generated in the browser ----------
+// Soft rain (with drops on the glass), the river, birds by day and crickets at night, in a light reverb. Browsers only
+// allow sound after a first tap or key press, so it starts then; the button switches it off, and the choice is kept.
 const soundBtn = document.getElementById('sound');
-let AC = null, master = null, wet = null, dry = null, bus = null, soundOn = false, padNodes = [], chordI = 0;
-const VOL = .32;
+let AC = null, master = null, dry = null, bus = null, soundOn = false;
+const VOL = .34;
 function noiseBuf(sec, kind) {
   const len = AC.sampleRate * sec, buf = AC.createBuffer(2, len, AC.sampleRate);
   for (let ch = 0; ch < 2; ch++) {
@@ -1291,67 +1280,69 @@ function noiseBuf(sec, kind) {
   }
   return buf;
 }
-function loop(buf, ...chain) { const s = AC.createBufferSource(); s.buffer = buf; s.loop = true; let n = s; for (const c of chain) { n.connect(c); n = c; } s.start(); return n; }
-function lfo(param, rate, depth) { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = rate; g.gain.value = depth; o.connect(g); g.connect(param); o.start(); }
-function filt(type, f, q = .7) { const b = AC.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
-function gain(v) { const g = AC.createGain(); g.gain.value = v; return g; }
+function loop(buf, ...chain) { const s2 = AC.createBufferSource(); s2.buffer = buf; s2.loop = true; let n = s2; for (const c2 of chain) { n.connect(c2); n = c2; } s2.start(); return n; }
+function lfo(param, rate, depth) { const o2 = AC.createOscillator(), g2 = AC.createGain(); o2.frequency.value = rate; g2.gain.value = depth; o2.connect(g2); g2.connect(param); o2.start(); }
+function filt(type, f, q = .7) { const b2 = AC.createBiquadFilter(); b2.type = type; b2.frequency.value = f; b2.Q.value = q; return b2; }
+function gain(v) { const g2 = AC.createGain(); g2.gain.value = v; return g2; }
 function startSound() {
   AC = new (window.AudioContext || window.webkitAudioContext)();
   const comp = AC.createDynamicsCompressor(); comp.threshold.value = -24; comp.ratio.value = 3; comp.connect(AC.destination);
   master = gain(0); master.connect(comp);
   dry = gain(1); dry.connect(master);
-  // a light room reverb from a generated, decaying impulse
-  const ir = AC.createBuffer(2, AC.sampleRate * 2.6, AC.sampleRate);
-  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3.2); }
-  const conv = AC.createConvolver(); conv.buffer = ir; wet = gain(.35); conv.connect(wet); wet.connect(master);
-  bus = gain(1); bus.connect(conv); bus.connect(dry);                          // everything sent here also gets the reverb
+  const ir = AC.createBuffer(2, AC.sampleRate * 2.2, AC.sampleRate);              // a light outdoor reverb
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3.5); }
+  const conv = AC.createConvolver(); conv.buffer = ir; const wet = gain(.3); conv.connect(wet); wet.connect(master);
+  bus = gain(1); bus.connect(conv); bus.connect(dry);
   const brown = noiseBuf(6, 'brown'), pink = noiseBuf(6, 'pink');
-  // river: a low rush whose brightness moves slowly, and a quieter babble on top
-  const rl = filt('lowpass', 520); lfo(rl.frequency, .05, 140);
-  loop(brown, rl, gain(.5)).connect(dry);
-  const bb = filt('bandpass', 1300, 1.2), bg = gain(.05); lfo(bg.gain, .23, .03); lfo(bb.frequency, .11, 300);
-  loop(pink, bb, bg).connect(dry);
-  // wind in the trees: soft swells every few seconds
-  const wb = filt('bandpass', 700, .6), wg = gain(.07); lfo(wg.gain, .07, .05); lfo(wb.frequency, .03, 250);
-  loop(pink, wb, wg).connect(bus);
-  // warm pad: detuned triangles under a low-pass, drifting through four quiet chords
-  const pf = filt('lowpass', 900, .5), pg = gain(.022); lfo(pf.frequency, .04, 250); lfo(pg.gain, .09, .006);
-  pf.connect(pg); pg.connect(bus);
-  for (let v = 0; v < 4; v++) for (const det of [-5, 5]) { const o = AC.createOscillator(); o.type = 'triangle'; o.detune.value = det; o.connect(pf); o.start(); padNodes.push(o); }
-  setChord(true); setInterval(() => setChord(false), 16000);
+  // the river: a low, slowly moving rush
+  const rl = filt('lowpass', 480); lfo(rl.frequency, .05, 120);
+  loop(brown, rl, gain(RAIN ? .32 : .45)).connect(dry);
+  if (RAIN) {
+    // soft rain: a bright, airy hiss that breathes a little
+    const rh = filt('highpass', 900), rlp = filt('lowpass', 7000), rg = gain(.13); lfo(rg.gain, .06, .03);
+    loop(pink, rh, rlp, rg).connect(bus);
+    // and a duller layer of rain on leaves and the roof
+    const lb = filt('bandpass', 2200, .5), lg = gain(.05); lfo(lb.frequency, .04, 500);
+    loop(pink, lb, lg).connect(dry);
+  }
   document.addEventListener('visibilitychange', () => { if (!AC) return; if (document.hidden) AC.suspend(); else if (soundOn) AC.resume(); });
-  setInterval(soundTick, 300);
+  setInterval(soundTick, 120);
 }
-const CHORDS = [[146.83, 220, 277.18, 329.63], [123.47, 185, 246.94, 293.66], [98, 146.83, 246.94, 293.66], [110, 164.81, 220, 277.18]];   // D(add9), Bm7, Gmaj7, A
-function setChord(now) {
-  const ch = CHORDS[chordI++ % CHORDS.length], t = AC.currentTime;
-  padNodes.forEach((o, i) => { const f = ch[i >> 1] * (ENV.stars > .5 ? .5 : 1) * (i >> 1 === 3 && ENV.stars > .5 ? 2 : 1); if (now) o.frequency.value = f; else o.frequency.setTargetAtTime(f, t, 2.5); });
+// a single drop on the glass: a tiny filtered click
+let clickBuf = null;
+function drop(vol) {
+  if (!clickBuf) { clickBuf = AC.createBuffer(1, AC.sampleRate * .03, AC.sampleRate); const d = clickBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (AC.sampleRate * .004)); }
+  const src = AC.createBufferSource(), bp = filt('bandpass', 2500 + Math.random() * 3500, 3), g2 = gain(vol), pan = AC.createStereoPanner ? AC.createStereoPanner() : null;
+  src.buffer = clickBuf; src.connect(bp); bp.connect(g2);
+  if (pan) { pan.pan.value = Math.random() * 1.6 - .8; g2.connect(pan); pan.connect(bus); } else g2.connect(bus);
+  src.start();
 }
-// a bird phrase: a few short notes with vibrato, panned somewhere in the trees
+// a bird phrase: a few short notes with vibrato, somewhere in the trees
 function bird(vol) {
   const pan = AC.createStereoPanner ? AC.createStereoPanner() : null, out = gain(1);
   if (pan) { pan.pan.value = Math.random() * 1.6 - .8; out.connect(pan); pan.connect(bus); } else out.connect(bus);
   const base = 2200 + Math.random() * 1600, n = 2 + (Math.random() * 5 | 0), gap = .09 + Math.random() * .08;
   for (let k = 0; k < n; k++) {
-    const t = AC.currentTime + k * gap, d = .06 + Math.random() * .07, o = AC.createOscillator(), g = AC.createGain(), vib = AC.createOscillator(), vg = AC.createGain();
+    const t = AC.currentTime + k * gap, d = .06 + Math.random() * .07, o2 = AC.createOscillator(), g2 = AC.createGain(), vib = AC.createOscillator(), vg = AC.createGain();
     const f = base * (1 + (Math.random() - .5) * .35);
-    o.frequency.setValueAtTime(f, t); o.frequency.linearRampToValueAtTime(f * (.85 + Math.random() * .35), t + d);
-    vib.frequency.value = 28 + Math.random() * 20; vg.gain.value = f * .03; vib.connect(vg); vg.connect(o.frequency);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + d);
-    o.connect(g); g.connect(out); o.start(t); vib.start(t); o.stop(t + d + .02); vib.stop(t + d + .02);
+    o2.frequency.setValueAtTime(f, t); o2.frequency.linearRampToValueAtTime(f * (.85 + Math.random() * .35), t + d);
+    vib.frequency.value = 28 + Math.random() * 20; vg.gain.value = f * .03; vib.connect(vg); vg.connect(o2.frequency);
+    g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + .012); g2.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o2.connect(g2); g2.connect(out); o2.start(t); vib.start(t); o2.stop(t + d + .02); vib.stop(t + d + .02);
   }
 }
 function cricket(vol) {
-  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(), am = AC.createOscillator(), ag = AC.createGain();
-  o.frequency.value = 4300 + Math.random() * 300; am.frequency.value = 30; ag.gain.value = vol * .5;
-  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol * .5, t + .02); g.gain.linearRampToValueAtTime(0, t + .35);
-  am.connect(ag); ag.connect(g.gain); o.connect(g); g.connect(dry); o.start(t); am.start(t); o.stop(t + .4); am.stop(t + .4);
+  const t = AC.currentTime, o2 = AC.createOscillator(), g2 = AC.createGain(), am = AC.createOscillator(), ag = AC.createGain();
+  o2.frequency.value = 4300 + Math.random() * 300; am.frequency.value = 30; ag.gain.value = vol * .5;
+  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol * .5, t + .02); g2.gain.linearRampToValueAtTime(0, t + .35);
+  am.connect(ag); ag.connect(g2.gain); o2.connect(g2); g2.connect(dry); o2.start(t); am.start(t); o2.stop(t + .4); am.stop(t + .4);
 }
 function soundTick() {
   if (!soundOn || !AC || lofi() || document.hidden) return;
-  const day = 1 - ENV.lamp, night = ENV.stars;
-  if (day > .3 && SEASON !== SEASONS.winter && Math.random() < .07 * day) bird(.022 * day);
-  if (night > .3 && SEASON !== SEASONS.winter && Math.random() < .35 * night) cricket(.012 * night);
+  const day = 1 - ENV.lamp, night = ENV.stars, quiet = RAIN ? .45 : 1, winter = SEASON === SEASONS.winter;
+  if (RAIN && Math.random() < .35) drop(.04 + Math.random() * .05);
+  if (day > .3 && !winter && Math.random() < .03 * day * quiet) bird(.02 * day);
+  if (night > .3 && !winter && Math.random() < .14 * night * quiet) cricket(.011 * night);
 }
 function setSound(on, save) {
   if (on && !AC) startSound();
@@ -1360,17 +1351,16 @@ function setSound(on, save) {
   soundBtn.setAttribute('aria-pressed', String(on)); soundBtn.textContent = on ? 'Sound off' : 'Sound on';
   if (save) try { localStorage.setItem('jn-sound', on ? 'on' : 'off'); } catch (e) {}
 }
-let pending = null;                       // a remembered 'on' waiting for the first interaction
+let pending = null;                       // sound is on by default: it waits for the first tap or key press
 soundBtn?.addEventListener('click', () => { if (pending) { pending(); setSound(false, true); return; } setSound(!soundOn, true); });
-// browsers only allow sound after a click or key press: if the visitor had it on, it returns with their first interaction
-try {
-  if (soundBtn && localStorage.getItem('jn-sound') === 'on') {
-    soundBtn.textContent = 'Sound off'; soundBtn.setAttribute('aria-pressed', 'true');
-    const resume = e => { if (e.target === soundBtn) return; pending(); setSound(true, false); };
-    pending = () => { removeEventListener('pointerdown', resume); removeEventListener('keydown', resume); pending = null; };
-    addEventListener('pointerdown', resume); addEventListener('keydown', resume);
-  }
-} catch (e) {}
+let wantSound = true;
+try { wantSound = localStorage.getItem('jn-sound') !== 'off'; } catch (e) {}
+if (soundBtn && wantSound) {
+  soundBtn.textContent = 'Sound off'; soundBtn.setAttribute('aria-pressed', 'true');
+  const resume = e => { if (e.target === soundBtn) return; pending(); setSound(true, false); };
+  pending = () => { removeEventListener('pointerdown', resume); removeEventListener('keydown', resume); pending = null; };
+  addEventListener('pointerdown', resume); addEventListener('keydown', resume);
+} else if (soundBtn) { soundBtn.textContent = 'Sound on'; soundBtn.setAttribute('aria-pressed', 'false'); }
 // keyboard users can jump straight to the text version
 document.getElementById('skip')?.addEventListener('click', e => { e.preventDefault(); setMode(true, true); const m = document.getElementById('lofi'); m.setAttribute('tabindex', '-1'); m.focus(); });
 
@@ -1404,7 +1394,7 @@ function frame(now) {
   render(t);
   if (now - chipT > 1000) { chipT = now; updateTimeChip(); }
 }
-addEventListener('resize', () => { layout(); cur = { ...goal, p: cur.p }; });
+addEventListener('resize', () => { fitShrink = 0; layout(); cur = { ...goal, p: cur.p }; });
 layout(); cur = { ...goal };
 setMode(lofi(), false);
 requestAnimationFrame(frame);

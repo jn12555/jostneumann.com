@@ -31,7 +31,7 @@
     try { if (localStorage.getItem('jn-mode') === 'lofi') document.documentElement.classList.add('lofi'); } catch (e) {}
   </script>
   <link rel="stylesheet" href="assets/fonts/fonts.css">
-  <link rel="stylesheet" href="styles.css?v=2026-10-23-resources">
+  <link rel="stylesheet" href="styles.css?v=2026-10-23-rain">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23120f16'/%3E%3Crect x='3' y='4' width='10' height='7' fill='%23d3c8ae'/%3E%3Crect x='4' y='5' width='8' height='5' fill='%2310201c'/%3E%3Crect x='5' y='7' width='4' height='1' fill='%237ff5d2'/%3E%3Crect x='6' y='11' width='4' height='2' fill='%23bfb398'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -71,7 +71,7 @@
   </aside>
 
   <div class="dock">
-    <button class="chip" id="sound" type="button" aria-pressed="false" title="Soft ambient sound: river, wind, a warm pad, birds by day and crickets at night">Sound on</button>
+    <button class="chip" id="sound" type="button" aria-pressed="true" title="Rain and nature sounds: soft rain, the river, birds by day and crickets at night">Sound off</button>
     <span class="chip time" id="local-time" title="Your local time: the light in the room follows it" aria-live="off"></span>
     <button class="chip" id="mode" type="button" aria-pressed="false">LO-FI</button>
   </div>
@@ -275,6 +275,6 @@
 
   <script src="topo.js?v=2026-10-23"></script>
   <script src="dots.js?v=2026-10-23"></script>
-  <script src="room.js?v=2026-10-23-nocv"></script>
+  <script src="room.js?v=2026-10-23-rain"></script>
 </body>
 </html>
