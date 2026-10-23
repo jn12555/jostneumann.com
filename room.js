@@ -895,7 +895,7 @@ if (QS.get('export') === 'reference') {
 }
 // ---------- room shell: one-point perspective around the back wall (the 384x216 scene above) ----------
 // The displayed canvas is 480x270; the back wall sits at (OX, OY). Ceiling beams, side walls and floor planks run
-// towards the vanishing point; a monstera in the foreground frames the view and move with the parallax.
+// towards the vanishing point.
 const VPX = 240, VPY = 120;
 const toY = (x, y, yT) => VPX + (x - VPX) * (yT - VPY) / (y - VPY);          // x on the ray from VP through (x, y), at height yT
 const toX = (x, y, xT) => VPY + (y - VPY) * (xT - VPX) / (x - VPX);          // y on the same ray, at x = xT
@@ -1018,18 +1018,7 @@ function drawShellBack(c) {
 }
 
 function drawShellFront(c) {
-  // monstera in a terracotta pot, bottom left
-  poly(c, [[2, 242], [44, 242], [40, 272], [6, 272]], '#b86a46'); r(c, 0, 240, 46, 4, '#c8784f');
-  const LV = [[30, 214, 22, 13, -.5, '#3e7046'], [58, 200, 24, 14, -.2, '#2f5a36'], [16, 186, 20, 12, -1.1, '#4f8a50'], [46, 172, 22, 12, -.7, '#3e7046'], [74, 222, 18, 11, .25, '#4f8a50'], [6, 220, 16, 10, -1.6, '#2f5a36']];
-  for (const [x, y, a, b, rot] of LV) strokePath(c, [[22, 242], [x, y]], '#2a4a2c', 2);
-  for (const [x, y, a, b, rot, col] of LV) {
-    ell(c, x, y, a, b, col, rot);
-    ell(c, x - Math.cos(rot) * a * .2, y - Math.sin(rot) * a * .2 - 2, a * .55, b * .35, lite(col, .12), rot);
-    for (let k = -2; k <= 2; k++) {                                            // the monstera's slits
-      const px = x + Math.cos(rot) * k * a * .32, py = y + Math.sin(rot) * k * a * .32;
-      strokePath(c, [[px - Math.sin(rot) * b * .25, py + Math.cos(rot) * b * .25], [px - Math.sin(rot) * b * 1.05, py + Math.cos(rot) * b * 1.05]], '#1e3a22', 1);
-    }
-  }
+  // the foreground is left clear (the monstera was removed on 23 October 2026)
 }
 const lite = (c, t) => mix(c, '#ffffff', t);
 
