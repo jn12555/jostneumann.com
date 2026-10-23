@@ -7,7 +7,7 @@
 // the shelf (Experience), the notebook (Writing) and the phone (Contact).
 (() => {
 'use strict';
-const W = 384, H = 216, TAU = Math.PI * 2;
+const W = 432, H = 216, TAU = Math.PI * 2;   // the back wall: glass from the left wall to the right edge of the picture
 const VW = 480, VH = 270, OX = 48, OY = 20;   // displayed room (perspective shell) and where the back wall sits in it
 const html = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -137,22 +137,22 @@ function text(c, s, x, y, col) {
 
 // ---------- hotspots ----------
 const SPOTS = [
-  { id: 'about', label: 'About', n: '01', x: 196, y: 90, w: 116, h: 60, line: '>ABOUT' },
-  { id: 'experience', label: 'Experience', n: '02', x: 390, y: 25, w: 40, h: 166, line: '>EXPERIENCE' },
-  { id: 'contact', label: 'Contact', n: '05', x: 312, y: 121, w: 20, h: 29, line: '>CONTACT' },
-  { id: 'writing', label: 'Writing', n: '03', x: 92, y: 144, w: 46, h: 13, line: '>WRITING' }
+  { id: 'about', label: 'About', n: '01', x: 134, y: 90, w: 116, h: 60, line: '>ABOUT' },
+  { id: 'experience', label: 'Experience', n: '02', x: 300, y: 128, w: 66, h: 21, line: '>EXPERIENCE' },
+  { id: 'contact', label: 'Contact', n: '05', x: 252, y: 121, w: 20, h: 29, line: '>CONTACT' },
+  { id: 'writing', label: 'Writing', n: '03', x: 68, y: 144, w: 46, h: 13, line: '>WRITING' }
 ];
 const NAV_ONLY = [{ id: 'resources', label: 'Resources', n: '04', at: 'writing' }];   // panels without an object of their own; the camera turns to `at`
 const SOURCES = { about: ['about', 'expertise'], experience: ['experience', 'education'], contact: ['contact'], writing: ['writing'], resources: ['resources'] };
 
 // ---------- the 40-inch curved ultrawide (21:9) ----------
-const MON = { x: 198, w: 112, cy: 114, h0: 38, k: .14 };   // the screen is taller at the edges than in the middle
+const MON = { x: 136, w: 112, cy: 114, h0: 38, k: .14 };   // centred in the picture (x 192 on the wall = 240 on screen)   // the screen is taller at the edges than in the middle
 // positions the code layers use; the painted still (STILL_GEO further down) replaces them with its own
 const GEO = {
-  clip: [0, 0, 384, 192], outDY: 0,                         // glass opening and vertical shift of the view
-  panesX: [[3, 95], [98, 191], [194, 287], [290, 381]], glassBottom: 146, sill: 146, desk: [147, 155],
-  lamp: { bulb: [323, 103, 10], glow: [328, 105], light: [328, 108], cone: [[322, 103], [334, 103], [356, 150], [298, 150]], pool: [330, 150] },
-  kbd: [254, 152], phone: [317, 126, 9, 15], mug: [144, 136],
+  clip: [0, 0, W, 192], outDY: 0,                         // glass opening and vertical shift of the view
+  panesX: [[3, 106], [110, 214], [218, 322], [326, 429]], glassBottom: 146, sill: 146, desk: [147, 155],
+  lamp: { bulb: [263, 103, 10], glow: [268, 105], light: [268, 108], cone: [[262, 103], [274, 103], [296, 150], [238, 150]], pool: [270, 150] },
+  kbd: [192, 152], phone: [257, 126, 9, 15], mug: [120, 136],
   clock: { x: 330, y: 22, h: 4.5, m: 7, s: 7.5, cover: 0, face: '#ece6da' }, shadows: true
 };
 const monCol = i => { const u = (i + .5) / MON.w * 2 - 1, h = MON.h0 * (1 + MON.k * u * u); return { top: MON.cy - h / 2, h }; };
@@ -160,7 +160,7 @@ const monCol = i => { const u = (i + .5) / MON.w * 2 - 1, h = MON.h0 * (1 + MON.
 // ---------- glass wall and the view: a full-width forest river panorama (colours from ENV and SEASON) ----------
 // The back wall is glass from the ceiling to the floor (y 0 to 192); the view behind it is drawn here in layers.
 const WIN = { x: 0, y: 0, w: W, h: 192 };
-const PANES = [[3, 3, 92, 186], [98, 3, 93, 186], [194, 3, 93, 186], [290, 3, 91, 186]];   // glass panels between the mullions
+const PANES = [[3, 3, 103, 186], [110, 3, 104, 186], [218, 3, 104, 186], [326, 3, 103, 186]];   // glass panels between the mullions
 const SKY = 100, FAR = 102, NEAR = 106, RIV0 = 106, RIV1 = 142;                      // horizon, far bank, river
 const rnd = mulberry32(11);
 const ridge = (y0, amp, step, seed) => { const q = mulberry32(seed), pts = [[-10, 200]]; for (let x = -10; x <= W + 10; x += step) pts.push([x, y0 - q() * amp]); pts.push([W + 10, 200]); return pts; };
@@ -216,11 +216,11 @@ const BANK_TREES = [
   { t: 'spruce', x: 28, h: 60, w: 10 }, { t: 'oak', x: 48, h: 46, r: 13, bloom: 1 }, { t: 'rowan', x: 94, h: 30, r: 7 },
   { t: 'willow', x: 124, h: 44, r: 15 }, { t: 'alder', x: 190, h: 40, r: 9 }, { t: 'poplar', x: 214, h: 56, r: 5 },
   { t: 'spruce', x: 240, h: 34, w: 6 }, { t: 'spruce', x: 274, h: 30, w: 5 }, { t: 'oak', x: 312, h: 50, r: 14 },
-  { t: 'spruce', x: 342, h: 64, w: 10 }, { t: 'rowan', x: 368, h: 26, r: 6 }
+  { t: 'spruce', x: 342, h: 64, w: 10 }, { t: 'rowan', x: 368, h: 26, r: 6 }, { t: 'spruce', x: 404, h: 56, w: 9 }, { t: 'oak', x: 424, h: 42, r: 11 }
 ].map(t => ({ ...t, h: Math.round(t.h * .6), w: t.w && t.w * .7, r: t.r && Math.max(4, t.r * .7) }));   // kept low so the view stays open
 const EDGE = []; for (let x = 2; x < W; x += 3 + vr() * 7) EDGE.push({ x, h: 5 + vr() * 7, c: vr() });   // flowers at the water's edge
 const LILIES = []; for (const [cx, n] of [[100, 7], [262, 9], [330, 5]]) for (let i = 0; i < n; i++) LILIES.push({ x: cx + (vr() - .5) * 30, y: 132 + vr() * 7, f: vr() < .35 });
-const ROCKS = [[8, 143, 5], [62, 142, 4], [134, 144, 6], [200, 141, 3], [288, 143, 5], [378, 142, 4], [40, 178, 6], [170, 180, 5], [330, 177, 7]];
+const ROCKS = [[8, 143, 5], [62, 142, 4], [134, 144, 6], [200, 141, 3], [288, 143, 5], [378, 142, 4], [414, 143, 5], [40, 178, 6], [170, 180, 5], [330, 177, 7]];
 const TUFTS = []; for (let i = 0; i < 110; i++) TUFTS.push({ x: vr() * W, y: 150 + vr() * 34, h: 3 + vr() * 6 }); TUFTS.sort((a, b) => a.y - b.y);
 const MEADOW = []; for (let i = 0; i < 150; i++) MEADOW.push({ x: vr() * W, y: 158 + vr() * 26, t: vr(), h: 4 + vr() * 7, c: (vr() * 5) | 0 }); MEADOW.sort((a, b) => a.y - b.y);
 
@@ -582,7 +582,7 @@ function drawRoom(c) {
   // floor-to-ceiling glass: everything above the floor stays transparent except the frame
   const frame = '#1c1c20', edge = '#3a3a42';
   r(c, 0, 0, W, 2, frame); r(c, 0, 2, W, 1, edge);
-  for (const x of [0, 95, 191, 287, 382]) { r(c, x, 0, 2, 192, frame); r(c, x + 1, 0, 1, 192, edge); }
+  for (const x of [0, 107, 215, 323, 430]) { r(c, x, 0, 2, 192, frame); r(c, x + 1, 0, 1, 192, edge); }
   r(c, 0, 190, W, 2, frame);
 }
 
@@ -592,25 +592,27 @@ function drawDesk(c) {
   r(c, 0, 192, W, 4, '#2a2a2e'); r(c, 0, 192, W, 1, '#5a5a62');                 // threshold under the glass
   r(c, 0, 196, W, 20, '#57402f');
   for (let y = 201, i = 0; y < 216; y += 6, i++) { r(c, 0, y, W, 1, '#46332a'); for (let x = (i * 71) % 120; x < W; x += 140) r(c, x, y - 5, 1, 5, '#46332a'); }
-  poly(c, [[70, 204], [250, 204], [264, 216], [56, 216]], '#45413e'); r(c, 68, 204, 184, 1, '#524d49');
+  poly(c, [[102, 204], [282, 204], [296, 216], [88, 216]], '#45413e'); r(c, 100, 204, 184, 1, '#524d49');   // centred under the screen
   const under = c.createLinearGradient(0, 161, 0, 204);
   under.addColorStop(0, 'rgba(20,10,6,.5)'); under.addColorStop(1, 'rgba(20,10,6,0)');
   c.fillStyle = under; c.fillRect(0, 161, W, 43);
   // slim black steel frame (no drawers)
   r(c, 16, 159, 352, 2, '#2a2a2e');
-  for (const lx2 of [16, 364]) { r(c, lx2, 159, 3, 54, '#2a2a2e'); r(c, lx2, 159, 1, 54, '#4a4a52'); r(c, lx2 - 3, 213, 9, 1, '#18181c'); }
+  for (const lx2 of [16, 412]) { r(c, lx2, 159, 3, 54, '#2a2a2e'); r(c, lx2, 159, 1, 54, '#4a4a52'); r(c, lx2 - 3, 213, 9, 1, '#18181c'); }
   // ---------- desk top: light oak, thin front edge ----------
-  poly(c, [[6, 146], [384, 146], [384, 156], [0, 156]], '#bf9468');
+  poly(c, [[6, 146], [W, 146], [W, 156], [0, 156]], '#bf9468');
   const gr = mulberry32(21);
   for (let i = 0; i < 60; i++) { const y = 147 + (gr() * 9 | 0), x = gr() * W, w = 10 + gr() * 50; r(c, x, y, w, 1, gr() < .5 ? '#c9a078' : '#b0855a'); }
   r(c, 0, 146, W, 1, '#d8ae80');
   r(c, 0, 156, W, 3, '#a47a52'); r(c, 0, 156, W, 1, '#e0b88a'); r(c, 0, 158, W, 1, '#6a4a30');
   // shadows on the desk
-  for (const [x, w] of [[94, 42], [138, 14], [196, 116], [314, 18], [338, 14], [356, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
+  for (const [x, w] of [[70, 42], [114, 14], [134, 116], [254, 18], [278, 14], [300, 64], [398, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
+  c.save(); c.translate(-60, 0);                                                    // lamp: right of the screen
   // minimal desk lamp on the right: black stem, arm and a small head over the phone
   ell(c, 344, 149, 6, 1.6, '#2a2a2e'); r(c, 338, 149, 13, 1, '#18181c');
   r(c, 343, 100, 1, 49, '#2a2a2e'); r(c, 330, 100, 14, 1, '#2a2a2e');
   r(c, 322, 99, 12, 4, '#2a2a2e'); r(c, 322, 99, 12, 1, '#4a4a52');
+  c.restore(); c.save(); c.translate(-24, 0);                                      // notebook and mug: left of the screen
   // notebook and pen
   poly(c, [[96, 148], [115, 148], [115, 154], [94, 154]], '#e6dac0');
   poly(c, [[115, 148], [133, 148], [135, 154], [115, 154]], '#ded1b4');
@@ -621,12 +623,16 @@ function drawDesk(c) {
   r(c, 140, 138, 9, 10, '#e9e4da'); r(c, 147, 138, 2, 10, '#cfc8bc');
   r(c, 149, 140, 3, 1, '#e9e4da'); r(c, 151, 140, 1, 6, '#e9e4da'); r(c, 149, 145, 3, 1, '#e9e4da');
   r(c, 141, 138, 7, 1, '#3a2418');
+  c.restore();
   // monitor: 40-inch curved ultrawide on a slim aluminium stand
+  c.save(); c.translate(-62, 0);                                                    // stand, mat, keyboard and mouse follow the screen
   poly(c, [[246, 130], [258, 130], [257, 146], [247, 146]], '#8c9098'); r(c, 256, 130, 2, 16, '#6c7078'); r(c, 247, 130, 1, 16, '#a8acb4');
   poly(c, [[234, 145], [270, 145], [274, 149], [230, 149]], '#a4a8b0'); r(c, 234, 145, 36, 1, '#c4c8d0'); r(c, 230, 148, 44, 1, '#70747c');
+  c.restore();
   for (let i = -2; i < MON.w + 2; i++) { const { top, h } = monCol(clamp(i, 0, MON.w - 1)); r(c, MON.x + i, top - 1.5, 1, h + 3, '#16181c'); }
   for (let i = 0; i < MON.w; i++) { const { top, h } = monCol(i); r(c, MON.x + i, top + h + 1, 1, 1, '#2c2f36'); }
   r(c, MON.x + MON.w / 2 - 1, MON.cy - MON.h0 / 2 - 1.5, 2, 1, '#30343a');
+  c.save(); c.translate(-62, 0);
   // desk mat
   poly(c, [[210, 149], [308, 149], [312, 156], [206, 156]], '#3e4c46'); r(c, 206, 155, 106, 1, '#2e3a35');
   // retro mechanical keyboard: beige case, sculpted two-tone keycaps, accent keys and a coiled cable
@@ -650,14 +656,31 @@ function drawDesk(c) {
   }
   // minimal mouse
   ell(c, 299, 152, 2.6, 1.6, '#ecebe6'); r(c, 298, 151, 2, 1, '#ffffff');
+  c.restore(); c.save(); c.translate(-60, 0);                                      // phone: right of the screen
   // phone on an oak charging dock, right of the screen (contact)
   poly(c, [[314, 148], [330, 148], [328, 140], [316, 140]], '#b48a5e'); r(c, 314, 147, 16, 1, '#8a6440');
   r(c, 316, 124, 11, 19, '#141518'); r(c, 316, 124, 11, 1, '#34363c'); r(c, 317, 126, 9, 15, '#0e1014');
   r(c, 321, 125, 1, 1, '#2a2c30');
+  c.restore();
+  // a few books on the desk, held by a black bookend, and a small stack with a stone (they open Experience)
+  for (const [x, w, h, col] of [[304, 3, 15, '#2f3a4e'], [307.5, 4, 17, '#9c4a38'], [312, 3, 14, '#ddd3c0'], [315.5, 4, 16, '#3d5243'], [320, 3, 13, '#b98a3e'], [323.5, 4, 15, '#6e2e38']]) {
+    r(c, x + w, 150 - h, 2, h - 2, 'rgba(20,12,8,.22)');                                   // shadow beside the spine
+    r(c, x, 148 - h, w, h, col); r(c, x, 148 - h, 1, h, mix(col, '#ffffff', .22)); r(c, x + w - 1, 148 - h, 1, h, mix(col, '#000000', .35));
+    r(c, x, 148 - h, w, 1, mix(col, '#ffffff', .32));
+    if (w > 3) { r(c, x + 1, 151 - h, w - 2, 1, '#d8b85a'); r(c, x + 1, 144, w - 2, 1, '#d8b85a'); }
+  }
+  r(c, 328, 135, 2, 13, '#141416'); r(c, 328, 147, 6, 1, '#141416'); r(c, 328, 135, 1, 13, '#3a3a40');   // bookend
+  for (const [y, w, col, dx] of [[145, 22, '#4a5a6e', 0], [142, 20, '#c9b48e', 1], [139, 21, '#3a3a3e', -.5]]) {
+    r(c, 340 + dx, y, w, 3, col); r(c, 340 + dx, y, w, 1, mix(col, '#ffffff', .25)); r(c, 340 + dx + w - 1, y, 1, 3, mix(col, '#000000', .3));
+    r(c, 340 + dx + 4, y + 1, 8, 1, '#d8b85a');
+  }
+  ell(c, 351, 137.6, 3, 1.6, '#7e7e78'); ell(c, 350.2, 137, 1.6, .8, '#a8a8a0');
+  c.save(); c.translate(42, 0);                                                     // plant: at the new right end of the desk
   // plant in a white ceramic pot
   const LEAF = [[364, 118, 4, 11, -.5, '#4a7a46'], [370, 116, 4, 12, .4, '#3a6438'], [360, 124, 3, 9, -1.1, '#3a6438'], [374, 123, 3, 9, 1.0, '#4a7a46'], [367, 110, 3, 10, .05, '#5a8a50']];
   for (const [x, y, a, b, rot, col] of LEAF) ell(c, x, y, a, b, col, rot);
   poly(c, [[359, 133], [377, 133], [375, 148], [361, 148]], '#e2ddd3'); r(c, 358, 132, 20, 2, '#f0ece4'); r(c, 374, 134, 2, 14, '#c8c2b6');
+  c.restore();
 }
 
 // ---------- light map ----------
@@ -666,7 +689,7 @@ function drawLight(c) {
   c.globalCompositeOperation = 'source-over';
   c.fillStyle = E.ambient; c.fillRect(0, 0, W, H);
   c.globalCompositeOperation = 'lighter';
-  glow(c, 192, 70, 260, E.winCol, E.winA * 1.1);               // sky light through the glass wall
+  glow(c, W / 2, 70, 280, E.winCol, E.winA * 1.1);             // sky light through the glass wall
   glow(c, 90, 104, 90, '#4a8070', .18);
   glow(c, ...GEO.lamp.light, 140, '#ffa860', .8 * E.lamp);       // desk lamp
   glow(c, ...GEO.lamp.pool, 60, '#ffcf90', .45 * E.lamp);
@@ -686,7 +709,7 @@ function drawLight(c) {
     lg.addColorStop(0, rgba('#ffc080', .35 * E.lamp)); lg.addColorStop(1, rgba('#ffc080', .15 * E.lamp));
     const cn = GEO.lamp.cone; c.fillStyle = lg; c.beginPath(); c.moveTo(...cn[0]); for (const q of cn.slice(1)) c.lineTo(...q); c.fill();
   }
-  glow(c, 200, 112, 170, '#b07050', .22 + .2 * E.lamp);          // warm fill
+  glow(c, 192, 112, 180, '#b07050', .22 + .2 * E.lamp);          // warm fill, centred on the screen
   c.globalCompositeOperation = 'source-over';
 }
 function drawVignette() {
@@ -925,8 +948,8 @@ function drawShellBack(c) {
   poly(c, [[0, -6], [VW, -6], [OX + W, OY], [OX, OY]], '#2e2c2a');
   for (let x = OX; x <= OX + W; x += 12) strokePath(c, [[x, OY], [toY(x, OY, -6), -6]], '#373431');
   r(c, OX, OY - 2, W, 2, '#b8ae9c');
-  // smooth plaster side walls with a soft shadow into the corners and a thin skirting
-  for (const side of [-1, 1]) {
+  // the smooth plaster left wall with a soft shadow into the corner and a thin skirting
+  for (const side of [-1]) {                                                       // only the left wall; on the right the glass runs to the edge
     const x0 = side < 0 ? OX : OX + W, xe = side < 0 ? 0 : VW;
     poly(c, [[xe, toX(x0, OY, xe)], [x0, OY], [x0, OY + 196], [xe, toX(x0, OY + 196, xe)]], '#3a3735');
     for (let k = 0; k < 6; k++) { const xx = x0 - side * k; strokePath(c, [[xx, toX(x0, OY, xx)], [xx, toX(x0, OY + 196, xx)]], `rgba(0,0,0,${.22 - k * .033})`); }
@@ -938,8 +961,8 @@ function drawShellBack(c) {
   for (let x = -260; x <= VW + 260; x += 30) strokePath(c, [[x, OY + 196], [toY(x, OY + 196, VH), VH]], '#46332a');
   for (const y of [OY + 226, OY + 244]) r(c, 0, y, VW, 1, '#46332a');
   const ry = OY + 216, rb = 262;
-  poly(c, [[OX + 56, ry], [OX + 264, ry], [toY(OX + 264, ry, rb), rb], [toY(OX + 56, ry, rb), rb]], '#45413e');
-  r(c, toY(OX + 56, ry, rb), rb, toY(OX + 264, ry, rb) - toY(OX + 56, ry, rb), 1, '#33302e');
+  poly(c, [[OX + 88, ry], [OX + 296, ry], [toY(OX + 296, ry, rb), rb], [toY(OX + 88, ry, rb), rb]], '#45413e');
+  r(c, toY(OX + 88, ry, rb), rb, toY(OX + 296, ry, rb) - toY(OX + 88, ry, rb), 1, '#33302e');
   // left wall: a framed print, drawn live over the paper by drawArtLive(): by default dots that move between data shapes
   // (dots.js), with ?art=topo an animated topographic map (topo.js), both made as OpenFilm pages; ?art=hiroshige and
   // ?art=bulb show the earlier static prints.
@@ -992,87 +1015,6 @@ function drawShellBack(c) {
     }
   }
   ART = at(cx, cy);
-  // right wall: floating oak shelves with a curated mix of books and objects (they open Experience)
-  const yAt = (x, f) => { const t = toX(OX + W, OY, x), b = toX(OX + W, OY + 194, x); return t + (b - t) * f; };
-  const xa = OX + W + 6, xb = VW - 4;
-  const quad = (x0, x1, f0, f1, col) => poly(c, [[x0, yAt(x0, f0)], [x1, yAt(x1, f0)], [x1, yAt(x1, f1)], [x0, yAt(x0, f1)]], col);
-  const BOOK = ['#2f3a4e', '#3d5243', '#b98a3e', '#9c4a38', '#ddd3c0', '#3a3a3e', '#8a9a80', '#6e2e38', '#c9b48e', '#4a5a6e'];
-  // light comes from the window (left): each spine is rounded from a lit edge to a shaded one, with cloth grain
-  const book = (x, w, h, f, col, band) => {
-    quad(x + w, x + w + 1.4, f - h + .012, f, 'rgba(10,8,6,.22)');                  // soft shadow on the wall
-    const n = Math.max(3, Math.round(w / .5));
-    for (let i = 0; i < n; i++) {
-      const u = (i + .5) / n, k = u < .3 ? mix(col, '#ffffff', .24 * (1 - u / .3)) : mix(col, '#000000', .42 * ((u - .3) / .7) ** 1.3);
-      quad(x + w * i / n, x + w * (i + 1) / n + .06, f - h, f, k);
-    }
-    for (let j = 0; j < 14; j++) { const fx = x + .2 + hash(x * 97 + j) * (w - .5), ff = f - h + hash(x * 31 + j * 7) * h; r(c, fx, yAt(fx, ff), 1, 1, rgba(hash(j * 3 + x) < .5 ? '#000000' : '#ffffff', .08)); }
-    quad(x, x + w, f - h, f - h + .006, mix(col, '#ffffff', .32));                  // top edge catching the light
-    quad(x, x + w, f - .009, f, 'rgba(0,0,0,.22)');                                 // contact shade on the shelf
-    if (band && w > 2.4) {
-      quad(x + .4, x + w - .9, f - h * .8, f - h * .8 + .005, '#d8b85a'); quad(x + .4, x + w - .9, f - h * .2, f - h * .2 + .005, '#d8b85a');
-      quad(x + .5, x + w - 1, f - h * .62, f - h * .44, mix(col, '#000000', .35)); quad(x + .7, x + w - 1.2, f - h * .56, f - h * .54, '#c8a84e');   // title label
-    }
-    return x + w + .3;
-  };
-  const row = (x, f, specs) => { for (const [w, h, ci, band] of specs) x = book(x, w, h, f, BOOK[ci], band); return x; };
-  const leaning = (x, w, h, f, col) => { poly(c, [[x, yAt(x, f)], [x + w, yAt(x + w, f)], [x + w + 3, yAt(x + w + 3, f - h)], [x + 3, yAt(x + 3, f - h)]], col);
-    poly(c, [[x + w - .8, yAt(x + w - .8, f)], [x + w, yAt(x + w, f)], [x + w + 3, yAt(x + w + 3, f - h)], [x + w + 2.2, yAt(x + w + 2.2, f - h)]], mix(col, '#000000', .3)); };
-  const flat = (x, f, specs) => specs.forEach(([L, ci, dx], j) => { quad(x + dx, x + dx + L, f - (j + 1) * .02, f - j * .02, BOOK[ci]); quad(x + dx, x + dx + L, f - (j + 1) * .02, f - (j + 1) * .02 + .004, mix(BOOK[ci], '#ffffff', .25)); });
-  const shelf = f => {
-    quad(xa, xb, f + .014, f + .04, 'rgba(0,0,0,.3)');                              // shadow under the board
-    quad(xa, xb, f, f + .014, '#7a5638'); quad(xa, xb, f + .009, f + .014, '#5e4129');   // front face, darker lower half
-    for (let k = 0; k < 7; k++) { const gx2 = xa + hash(f * 1000 + k) * (xb - xa - 8); quad(gx2, gx2 + 3 + hash(k + f * 99) * 6, f + .005 + (k % 2) * .003, f + .007 + (k % 2) * .003, '#6a4a30'); }   // grain
-    quad(xa, xb, f, f + .003, '#b08454');                                           // lit top edge
-  };
-  // a rounded ceramic: dark body, lit side, highlight
-  const pot = (x, y, rx, ry, col) => { ell(c, x, y, rx, ry, mix(col, '#000000', .3)); ell(c, x - rx * .2, y - ry * .05, rx * .78, ry * .9, col); ell(c, x - rx * .45, y - ry * .2, rx * .28, ry * .5, mix(col, '#ffffff', .4)); };
-  const F = [.28, .45, .62, .79];
-  F.forEach(shelf);
-  // top shelf: a trailing plant, then a run of hardbacks
-  quad(xa + 2, xa + 8, F[0] - .05, F[0], '#d8d2c8'); quad(xa + 6, xa + 8, F[0] - .05, F[0], '#b4aca0'); quad(xa + 2, xa + 3.4, F[0] - .05, F[0], '#ece8e0');
-  quad(xa + 1.6, xa + 8.4, F[0] - .054, F[0] - .046, '#f2eee6'); quad(xa + 2, xa + 8, F[0] - .009, F[0], 'rgba(0,0,0,.2)');
-  for (let k = 0; k < 11; k++) { const x = xa + 3 + (k % 3) * 2, y = yAt(x, F[0] - .05 + k * .02), col = k % 3 === 0 ? '#5a9a58' : k % 3 === 1 ? '#3e7046' : '#2f5a38'; ell(c, x + Math.sin(k) * 1.2, y, 1.6, 1.1, col); r(c, x + Math.sin(k) * 1.2 - 1, y - .6, 1, 1, '#7ab870'); }
-  row(xa + 12, F[0], [[2.6, .1, 0, 1], [3.2, .115, 7, 1], [2.2, .095, 4, 0], [3, .11, 2, 1], [2.4, .1, 6, 0]]);
-  // second shelf: a long run, one book leaning, a small ceramic vase
-  const e1 = row(xa + 2, F[1], [[2.4, .1, 3, 1], [3, .112, 0, 1], [2.2, .098, 8, 0], [3.4, .116, 1, 1], [2.6, .104, 5, 1], [2.2, .094, 4, 0]]);
-  leaning(e1 + .2, 2.6, .1, F[1], BOOK[9]);
-  const vx = xb - 5; ell(c, vx + 1.5, yAt(vx, F[1] - .03), 1.6, 3, 'rgba(10,8,6,.2)'); pot(vx, yAt(vx, F[1] - .035), 2.2, 3.3, '#cfc6b6');
-  r(c, vx - .8, yAt(vx, F[1] - .078), 1.8, 1.6, '#bfb6a6'); r(c, vx - .8, yAt(vx, F[1] - .078), 1, 1.6, '#e8e2d6'); r(c, vx - 1.1, yAt(vx, F[1] - .082), 2.4, .8, '#ece6da');
-  // third shelf: a horizontal stack, a framed photo, three upright books
-  flat(xa + 2, F[2], [[11, 3, 0], [10, 4, .6], [12, 0, -.4]]);
-  quad(xa + 22, xa + 23.4, F[2] - .072, F[2], 'rgba(10,8,6,.22)');
-  quad(xa + 16, xa + 22, F[2] - .075, F[2], '#141416'); quad(xa + 16, xa + 16.6, F[2] - .075, F[2], '#3a3a40');
-  quad(xa + 16.8, xa + 21.2, F[2] - .067, F[2] - .008, '#f4f0ea'); quad(xa + 16.8, xa + 21.2, F[2] - .067, F[2] - .062, '#c8c2b6');
-  quad(xa + 17.4, xa + 20.6, F[2] - .05, F[2] - .014, '#9ab4c8'); quad(xa + 17.4, xa + 20.6, F[2] - .028, F[2] - .014, '#5a7a68');
-  poly(c, [[xa + 17.4, yAt(xa + 17.4, F[2] - .028)], [xa + 18.8, yAt(xa + 18.8, F[2] - .046)], [xa + 20.6, yAt(xa + 20.6, F[2] - .03)]], '#6a7e96');
-  row(xa + 25, F[2], [[2.8, .108, 1, 1], [2.4, .1, 2, 0], [3.2, .114, 7, 1]]);
-  // bottom shelf: books held by a black bookend, and a low ceramic bowl
-  const e3 = row(xa + 2, F[3], [[3, .112, 5, 1], [2.4, .1, 8, 0], [2.8, .108, 0, 1], [2.2, .096, 6, 0], [3.4, .118, 3, 1]]);
-  quad(e3 + .3, e3 + 1.3, F[3] - .07, F[3], '#141416');
-  const bx = xb - 7; ell(c, bx + 1.5, yAt(bx, F[3] - .01), 4, 1.2, 'rgba(10,8,6,.25)'); ell(c, bx, yAt(bx, F[3] - .018), 4, 2, '#1e1e22');
-  ell(c, bx - 1, yAt(bx, F[3] - .02), 2.6, 1.4, '#34343a'); ell(c, bx, yAt(bx, F[3] - .03), 3.6, .9, '#5a5a62'); ell(c, bx + .4, yAt(bx, F[3] - .03), 2.8, .5, '#2a2a2e');
-  // below the shelves, an acoustic guitar stands against the wall in the shade
-  const gx = xa + 13, gy = f => yAt(gx, f), gs = (gy(1) - gy(0)) / 1;                  // wall height in pixels here
-  ell(c, gx + 1, gy(.985), 7, 1.2, 'rgba(0,0,0,.25)');                                  // contact shadow on the floor
-  ell(c, gx, gy(.925), 6, gs * .058, '#6e4528'); ell(c, gx, gy(.84), 4.6, gs * .042, '#6e4528');   // lower and upper bout
-  ell(c, gx - 1.2, gy(.915), 3.4, gs * .04, '#84552f'); ell(c, gx - .8, gy(.835), 2.4, gs * .028, '#84552f');   // lit spruce top
-  ell(c, gx + 1.4, gy(.93), 3.4, gs * .045, 'rgba(30,16,8,.45)'); ell(c, gx + 1, gy(.845), 2.4, gs * .03, 'rgba(30,16,8,.4)');   // shaded right side of the body
-  ell(c, gx, gy(.872), 1.9, 1.9, 'rgba(232,210,170,.2)'); ell(c, gx, gy(.872), 1.5, 1.5, '#24170f');   // rosette and sound hole
-  r(c, gx - 2, gy(.95), 4, 1, '#2e1e14');                                               // bridge
-  r(c, gx - 1, gy(.62), 2, gy(.81) - gy(.62), '#3e281a'); r(c, gx - 1, gy(.62), 1, gy(.81) - gy(.62), '#4c3322');   // neck
-  r(c, gx - 1.5, gy(.575), 3, gy(.62) - gy(.575), '#2e1e14');                          // headstock
-  for (const f of [.585, .605]) { r(c, gx - 2.5, gy(f), 1, 1, '#9a9286'); r(c, gx + 1.5, gy(f), 1, 1, '#9a9286'); }   // tuners
-  for (const dx of [-.5, .5]) strokePath(c, [[gx + dx, gy(.95)], [gx + dx, gy(.62)]], 'rgba(220,214,200,.35)', .5);   // strings
-  // a pair of boxing gloves hung by their laces from the underside of the bottom shelf
-  const gl = (x, f) => [x, yAt(x, f)], [px0, py0] = gl(xb - 9, F[3] + .036);
-  for (const [dx, f1] of [[-2.5, F[3] + .075], [2.5, F[3] + .09]]) { const [lx, ly] = gl(xb - 9 + dx, f1); strokePath(c, [[px0, py0], [lx, ly]], '#cfc6b6'); }
-  for (const [x, f, col] of [[xb - 11.5, F[3] + .09, '#7a2a26'], [xb - 6.5, F[3] + .105, '#6c2522']]) {
-    const [cx2, cy2] = gl(x, f), cs = yAt(x, .03) - yAt(x, 0);
-    r(c, cx2 - 2, cy2 - cs * .9, 4, cs * .35, '#d8d0c2');                               // white cuff
-    ell(c, cx2, cy2 + cs * .4, 2.8, cs * 1.1, col); ell(c, cx2 - .8, cy2 + cs * .2, 1.2, cs * .6, mix(col, '#ffffff', .18));   // glove and its sheen
-    ell(c, cx2 + 2, cy2 + cs * .1, 1.1, cs * .45, mix(col, '#000000', .2));             // the thumb
-    ell(c, cx2 + .9, cy2 + cs * .75, 1.6, cs * .55, mix(col, '#000000', .32)); r(c, cx2 - 1.4, cy2 + cs * .05, 1, 1, mix(col, '#ffffff', .45));   // shade and a glint
-  }
 }
 
 function drawShellFront(c) {
@@ -1096,7 +1038,7 @@ function drawShellLight(c) {
   const E = ENV;
   c.globalCompositeOperation = 'source-over'; c.fillStyle = E.ambient; c.fillRect(0, 0, VW, VH);
   c.globalCompositeOperation = 'lighter';
-  glow(c, OX + 192, OY + 80, 320, E.winCol, E.winA * 1.05);
+  glow(c, OX + W / 2, OY + 80, 340, E.winCol, E.winA * 1.05);
   glow(c, OX + GEO.lamp.light[0], OY + GEO.lamp.light[1], 180, '#ffa860', .75 * E.lamp);
   glow(c, OX + MON.x + MON.w / 2, OY + 112, 120, '#6a88c0', .3);
   glow(c, VW / 2, 160, 280, '#b07050', .2 + .2 * E.lamp);
@@ -1151,7 +1093,7 @@ function layout() {
   s0 = portrait ? Math.max(.7, Math.min(vw / 262, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);
   document.documentElement.style.setProperty('--band-bottom', Math.round(HEAD + VH * s0) + 'px');
   stackPortrait();
-  if (!openId) { goal.fx = portrait ? 215 + OX : VW / 2; goal.fy = portrait ? 128 : 132; }
+  if (!openId) { goal.fx = VW / 2; goal.fy = portrait ? 128 : 132; }
   else aim(openId);
 }
 // portrait: the section buttons and the disclaimer follow the intro, whatever its height
@@ -1224,7 +1166,7 @@ function closePanel() {
   panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('panel-open');
   document.querySelectorAll('[data-go]').forEach(a => a.classList.remove('on'));
-  goal = { fx: portrait ? 215 + OX : VW / 2, fy: portrait ? 128 : 132, z: 1, p: 0 }; if (reduce) cur = { ...goal };
+  goal = { fx: VW / 2, fy: portrait ? 128 : 132, z: 1, p: 0 }; if (reduce) cur = { ...goal };
 }
 const lofi = () => html.classList.contains('lofi');
 function sync() { if (lofi()) return; const id = location.hash.slice(1); if (SOURCES[id]) openPanel(id); else closePanel(); }
