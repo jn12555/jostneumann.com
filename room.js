@@ -137,12 +137,11 @@ function text(c, s, x, y, col) {
 const SPOTS = [
   { id: 'about', label: 'About', n: '01', x: 196, y: 90, w: 116, h: 60, line: '>ABOUT' },
   { id: 'experience', label: 'Experience', n: '02', x: 390, y: 25, w: 40, h: 166, line: '>EXPERIENCE' },
-  { id: 'cv', label: 'CV', n: '05', x: 158, y: 114, w: 34, h: 36, line: '>CV.PDF' },
-  { id: 'contact', label: 'Contact', n: '06', x: 312, y: 121, w: 20, h: 29, line: '>CONTACT' },
+  { id: 'contact', label: 'Contact', n: '05', x: 312, y: 121, w: 20, h: 29, line: '>CONTACT' },
   { id: 'writing', label: 'Writing', n: '03', x: 92, y: 144, w: 46, h: 13, line: '>WRITING' }
 ];
 const NAV_ONLY = [{ id: 'resources', label: 'Resources', n: '04', at: 'writing' }];   // panels without an object of their own; the camera turns to `at`
-const SOURCES = { about: ['about', 'expertise'], experience: ['experience', 'education'], cv: ['cv'], contact: ['contact'], writing: ['writing'], resources: ['resources'] };
+const SOURCES = { about: ['about', 'expertise'], experience: ['experience', 'education'], contact: ['contact'], writing: ['writing'], resources: ['resources'] };
 
 // ---------- the 40-inch curved ultrawide (21:9) ----------
 const MON = { x: 198, w: 112, cy: 114, h0: 38, k: .14 };   // the screen is taller at the edges than in the middle
