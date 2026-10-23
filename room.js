@@ -1,7 +1,7 @@
 // Pixel-art desk scene for the personal page, in the iahpixel style: a timber cabin office in the forest, drawn at
 // 384x216 native pixels and lit through a light map (albedo x light, then an emissive pass). Sky, landscape and room
 // light follow the visitor's local time (night, dawn, day, dusk, blue hour) and the season of the date, with sunbeams,
-// a lamp cone and soft shadows, parallax between landscape, wall and desk, and a real-time wall clock. The window
+// a lamp cone and soft shadows, and parallax between landscape, wall and desk. The window
 // looks out on a slow river under a mountain panorama with a mixed forest, a willow, wildflowers, mist, a heron and fireflies. On a
 // minimal desk, four objects open the sections of the plain (LO-FI) page in a panel: the curved screen (About),
 // the shelf (Experience), the tablet (CV) and the phone (Contact).
@@ -558,11 +558,6 @@ function drawRoom(c) {
   r(c, 0, 0, W, 2, frame); r(c, 0, 2, W, 1, edge);
   for (const x of [0, 95, 191, 287, 382]) { r(c, x, 0, 2, 192, frame); r(c, x + 1, 0, 1, 192, edge); }
   r(c, 0, 190, W, 2, frame);
-  // station clock on a rod from the ceiling beam (hands are drawn every frame)
-  const K = GEO.clock;
-  r(c, K.x - .5, 0, 1, K.y - 10, '#2a2a2e');
-  ell(c, K.x, K.y, 10.5, 10.5, '#2a2a2e'); ell(c, K.x, K.y, 9, 9, '#ece6da');
-  for (let k = 0; k < 12; k++) { const a = k / 12 * TAU, rr = k % 3 ? 7.4 : 6.8; r(c, K.x + Math.sin(a) * rr - .5, K.y - Math.cos(a) * rr - .5, 1, k % 3 ? 1 : 1.6, '#6a6458'); }
 }
 
 // ---------- desk layer (albedo; shifts slightly against the wall for parallax) ----------
@@ -654,7 +649,7 @@ function drawLight(c) {
   glow(c, ...GEO.lamp.light, 140, '#ffa860', .8 * E.lamp);       // desk lamp
   glow(c, ...GEO.lamp.pool, 60, '#ffcf90', .45 * E.lamp);
   glow(c, MON.x + MON.w / 2, 112, 96, '#6a88c0', .38);           // the screen
-  glow(c, GEO.tablet[0] + GEO.tablet[2] / 2, GEO.tablet[1] + GEO.tablet[3] / 2, 30, '#fff2dc', .12);   // the tablet
+  glow(c, GEO.tablet[0] + GEO.tablet[2] / 2, GEO.tablet[1] + GEO.tablet[3] / 2, 26, '#9ae8d8', .07);   // the tablet's dark screen
   glow(c, ...GEO.kbd, 26, '#7a9ad0', .3);                        // screen light on the keyboard
   const sun = sunInfo(E);
   if (sun) {                                                     // the window, projected onto the sill and the desk by the sun
@@ -681,15 +676,41 @@ function drawVignette() {
 }
 function updateEnv() { ENV = envAt(hourNow()); drawLight(lx); drawVignette(); if (typeof updateShell === 'function') updateShell(); }
 
-// clock hands, drawn as single pixels so they stay crisp
-function drawClockHands(c) {
-  const h = hourNow(), sec = FIXED ? 0 : new Date().getSeconds(), K = GEO.clock;
-  if (K.cover) ell(c, K.x, K.y, K.cover, K.cover, K.face);       // hide the hands painted in the still
-  const hand = (turn, len, col) => { const a = turn * TAU; for (let i = 0; i <= len; i += .5) r(c, K.x + Math.sin(a) * i - .5, K.y - Math.cos(a) * i - .5, 1, 1, col); };
-  hand((h % 12) / 12, K.h, '#2a2a2e');
-  hand(((h * 60) % 60) / 60, K.m, '#2a2a2e');
-  if (!reduce) hand(sec / 60, K.s, '#c84a3a');
-  r(c, K.x - .5, K.y - .5, 1, 1, '#c84a3a');
+// ---------- tablet: dots that keep re-forming the CV (in the manner of the dot print on the wall) ----------
+// 46 dots on the 26 x 20 screen move through six forms: the letters CV, a page of text, a portrait, a briefcase
+// (experience), a mortarboard (education) and a career timeline. Tone 0 dim, 1 cream, 2 mint accent.
+const TAB_N = 46, TAB_HOLD = 2.2, TAB_MOVE = 1.1;
+const tabAlong = (pts, n, tone) => {
+  const seg = []; let L = 0;
+  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push([pts[i - 1], pts[i], L, d]); L += d; }
+  return Array.from({ length: n }, (_, k) => { const q = L * k / Math.max(1, n - 1), [a, b, l0, d] = seg.find(z => q <= z[2] + z[3] + 1e-9) || seg[seg.length - 1], u = d ? (q - l0) / d : 0; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, tone]; });
+};
+const tabRing = (cx, cy, rx, ry, n, tone, a0 = 0, a1 = TAU) => Array.from({ length: n }, (_, k) => { const a = a0 + (a1 - a0) * k / (a1 - a0 >= TAU ? n : n - 1); return [cx + rx * Math.cos(a), cy + ry * Math.sin(a), tone]; });
+const tabFit = pts => { const out = pts.slice(0, TAB_N); while (out.length < TAB_N) out.push(pts[out.length % pts.length]); return out.sort((a, b) => a[0] - b[0] || a[1] - b[1]); };
+const TAB_SHAPES = [
+  // the letters C and V
+  tabFit([...tabAlong([[11, 5], [6, 5], [4, 7], [4, 13], [6, 15], [11, 15]], 20, 1), ...tabAlong([[14, 5], [18, 15], [22, 5]], 18, 2), ...tabAlong([[5, 17.5], [21, 17.5]], 8, 0)]),
+  // a page with a heading and lines of text
+  tabFit([...tabAlong([[7, 2], [19, 2], [19, 18], [7, 18], [7, 2]], 20, 0), ...tabAlong([[9, 5], [15, 5]], 5, 2), ...[7.5, 10, 12.5, 15].flatMap((y, i) => tabAlong([[9, y], [i % 2 ? 15 : 17, y]], 5, 1))]),
+  // a portrait: head and shoulders in a frame
+  tabFit([...tabRing(13, 7, 3, 3, 14, 1), ...tabRing(13, 18, 7, 5, 16, 1, Math.PI, TAU), ...tabAlong([[3, 18.5], [23, 18.5]], 6, 0), ...tabAlong([[19.5, 3], [23, 3]], 3, 2), ...tabAlong([[19.5, 5], [22, 5]], 3, 0)].slice(0, TAB_N)),
+  // a briefcase: experience
+  tabFit([...tabAlong([[4, 7], [22, 7], [22, 17], [4, 17], [4, 7]], 28, 1), ...tabAlong([[10, 7], [10, 4], [16, 4], [16, 7]], 8, 0), ...tabAlong([[4, 11], [22, 11]], 7, 0), ...[[12.5, 11], [13.5, 11], [13, 12]].map(([x, y]) => [x, y, 2])]),
+  // a mortarboard with its tassel: education
+  tabFit([...tabAlong([[13, 3], [23, 8], [13, 12], [3, 8], [13, 3]], 26, 1), ...tabAlong([[7, 10], [7, 15], [13, 17], [19, 15], [19, 10]], 14, 0), ...tabAlong([[21, 9], [21, 15]], 5, 2), [21, 16, 2]]),
+  // a career timeline: an axis with milestones that rise
+  tabFit([...tabAlong([[2, 16], [24, 16]], 16, 0), ...[[4, 13], [9, 11], [14, 9], [19, 6], [23, 4]].flatMap(([x, y], i) => [...tabRing(x, y, 1.3, 1.3, 4, i === 4 ? 2 : 1), ...tabAlong([[x, y + 1.5], [x, 15.5]], 2, 0)])])
+];
+function drawTabletDots(c, t, tx, ty, tw, th) {
+  r(c, tx, ty, tw, th, '#15171d');
+  const n = TAB_SHAPES.length, cyc = TAB_HOLD + TAB_MOVE, k = reduce ? 0 : Math.floor(t / cyc) % n, ph = reduce ? 0 : (t % cyc) - TAB_HOLD;
+  const a = TAB_SHAPES[k], b = TAB_SHAPES[(k + 1) % n], e = ph <= 0 ? 0 : (q => q < .5 ? 4 * q * q * q : 1 - Math.pow(-2 * q + 2, 3) / 2)(ph / TAB_MOVE);
+  const COL = ['#5f5b55', '#e9e3d6', '#7ff5d2'];
+  for (let i = 0; i < TAB_N; i++) {
+    const p0 = a[i], p1 = b[i], wob = e > 0 && e < 1 ? Math.sin(i * 1.7 + t * 6) * .6 * Math.sin(e * Math.PI) : 0;
+    const x = p0[0] + (p1[0] - p0[0]) * e + wob, y = p0[1] + (p1[1] - p0[1]) * e - wob * .5, tone = e < .5 ? p0[2] : p1[2];
+    if (x >= 0 && x < tw && y >= 0 && y < th) r(c, tx + x, ty + y, 1, 1, COL[tone]);
+  }
 }
 
 // ---------- emissive pass ----------
@@ -734,13 +755,10 @@ function drawEmissive(c, t, hover) {
   c.globalCompositeOperation = 'source-over';
   // LEDs
   r(c, MON.x + MON.w - 5, MON.cy + MON.h0 / 2 + 2, 1, 1, '#e8f0ff');
-  // tablet: the CV as a document
+  // tablet: dots re-forming the CV
   { const [tx, ty, tw, th] = GEO.tablet;
-    r(c, tx, ty, tw, th, '#f4f1ea');
-    text(c, 'CV', tx + 2, ty + 2, '#2a2e38'); r(c, tx + 11, ty + 3, tw - 14, 1, '#8a8e98'); r(c, tx + 11, ty + 5, tw - 18, 1, '#b4b8c0');
-    r(c, tx + 2, ty + 9, 6, 1, '#4fa898');
-    for (let i = 0; ty + 12 + i * 2 < ty + th - 1; i++) r(c, tx + 2, ty + 12 + i * 2, i % 3 === 2 ? tw - 12 : tw - 4, 1, '#c4c0b6');
-    c.globalCompositeOperation = 'lighter'; glow(c, tx + tw / 2, ty + th / 2, 22, '#fff2dc', .1); c.globalCompositeOperation = 'source-over'; }
+    drawTabletDots(c, t, tx, ty, tw, th);
+    c.globalCompositeOperation = 'lighter'; glow(c, tx + tw / 2, ty + th / 2, 20, '#7ff5d2', .06); c.globalCompositeOperation = 'source-over'; }
   // phone: a short conversation and a pulsing notification
   { const [qx, qy, qw, qh] = GEO.phone;
     r(c, qx, qy, qw, qh, '#121a24');
@@ -874,7 +892,7 @@ if (QS.get('export') === 'reference') {
 }
 // ---------- room shell: one-point perspective around the back wall (the 384x216 scene above) ----------
 // The displayed canvas is 480x270; the back wall sits at (OX, OY). Ceiling beams, side walls and floor planks run
-// towards the vanishing point; a desk chair and a monstera in the foreground frame the view and move with the parallax.
+// towards the vanishing point; a monstera in the foreground frames the view and move with the parallax.
 const VPX = 240, VPY = 120;
 const toY = (x, y, yT) => VPX + (x - VPX) * (yT - VPY) / (y - VPY);          // x on the ray from VP through (x, y), at height yT
 const toX = (x, y, xT) => VPY + (y - VPY) * (xT - VPX) / (x - VPX);          // y on the same ray, at x = xT
@@ -1078,13 +1096,6 @@ function drawShellBack(c) {
 }
 
 function drawShellFront(c) {
-  // modern desk chair seen from behind: grey upholstery on a slim black frame
-  ell(c, 300, VH - 2, 34, 5, 'rgba(20,10,6,.35)');
-  for (const [a, b] of [[[272, 247], [266, 272]], [[328, 247], [334, 272]], [[290, 248], [288, 272]], [[310, 248], [312, 272]]]) strokePath(c, [a, b], '#1c1c20', 2);
-  poly(c, [[268, 240], [332, 240], [335, 249], [265, 249]], '#6e6e74'); r(c, 266, 248, 68, 1, '#1c1c20');
-  poly(c, [[277, 198], [323, 198], [326, 238], [274, 238]], '#1c1c20');
-  poly(c, [[279, 200], [321, 200], [323, 236], [277, 236]], '#8e8e94');
-  r(c, 279, 200, 42, 2, '#a8a8ae'); r(c, 279, 220, 44, 1, '#7e7e84');
   // monstera in a terracotta pot, bottom left
   poly(c, [[2, 242], [44, 242], [40, 272], [6, 272]], '#b86a46'); r(c, 0, 240, 46, 4, '#c8784f');
   const LV = [[30, 214, 22, 13, -.5, '#3e7046'], [58, 200, 24, 14, -.2, '#2f5a36'], [16, 186, 20, 12, -1.1, '#4f8a50'], [46, 172, 22, 12, -.7, '#3e7046'], [74, 222, 18, 11, .25, '#4f8a50'], [6, 220, 16, 10, -1.6, '#2f5a36']];
@@ -1130,7 +1141,7 @@ function render(t) {
   o.clearRect(0, 0, W, H);
   drawOutside(o, t);
   ax.globalCompositeOperation = 'source-over';
-  ax.clearRect(0, 0, W, H); ax.drawImage(ROOM, 0, 0); drawClockHands(ax); ax.drawImage(DESKL, DDX, DDY);
+  ax.clearRect(0, 0, W, H); ax.drawImage(ROOM, 0, 0); ax.drawImage(DESKL, DDX, DDY);
   mx.clearRect(0, 0, W, H); mx.drawImage(A, 0, 0);
   ax.globalCompositeOperation = 'multiply'; ax.drawImage(L, 0, 0);
   ax.globalCompositeOperation = 'destination-in'; ax.drawImage(MASK, 0, 0);
