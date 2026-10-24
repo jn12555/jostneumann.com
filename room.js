@@ -1119,7 +1119,8 @@ function place() {
   let ox = axp - cur.fx * s, oy = ayp - cur.fy * s;
   const right = portrait ? vw : vw - pb.w * cur.p;     // the scene may slide under the open panel
   ox = VW * s > right ? clamp(ox, right - VW * s, 0) : (right - VW * s) / 2;   // slide whenever the room is wider than the space beside the panel
-  if (!portrait || cur.p > 0) oy = clamp(oy, Math.min(0, vh - VH * s), portrait ? HEAD : 0);
+  const bottom = portrait ? vh - pb.h * cur.p : vh;    // on phones the room may slide up behind the bottom sheet
+  if (!portrait || cur.p > 0) oy = clamp(oy, Math.min(0, bottom - VH * s), portrait ? HEAD : 0);
   xf = { ox, oy, s };
   cv.style.transform = `translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) scale(${s.toFixed(4)})`;
 }
@@ -1141,6 +1142,7 @@ function fill(id) {
 function openPanel(id) {
   const s = SPOTS.find(q => q.id === id) || NAV_ONLY.find(q => q.id === id); if (!s) return;
   openId = id; fill(id);
+  if (slideDir) { body.classList.remove('slide-next', 'slide-prev'); void body.offsetWidth; body.classList.add(slideDir > 0 ? 'slide-next' : 'slide-prev'); slideDir = 0; }
   kicker.textContent = `${s.n} · ${s.label}`;
   panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false');
   document.body.classList.add('panel-open');
@@ -1165,7 +1167,22 @@ function toDesk() { if (location.hash) history.pushState(null, '', location.path
 addEventListener('hashchange', sync);
 addEventListener('popstate', sync);
 document.getElementById('close').addEventListener('click', toDesk);
-addEventListener('keydown', e => { if (e.key === 'Escape' && openId) toDesk(); });
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && openId) toDesk();
+  if (openId && (e.key === 'ArrowRight' || e.key === 'ArrowLeft') && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '')) step(e.key === 'ArrowRight' ? 1 : -1);
+});
+// move between sections without going back to the room: arrows in the panel head, keyboard arrows, or a sideways swipe
+const ORDER = ['about', 'experience', 'writing', 'resources', 'contact'];
+let slideDir = 0;
+function step(d) { if (!openId) return; const i = ORDER.indexOf(openId); slideDir = d; go(ORDER[(i + d + ORDER.length) % ORDER.length]); }
+document.getElementById('prev')?.addEventListener('click', () => step(-1));
+document.getElementById('next')?.addEventListener('click', () => step(1));
+let sw = null;
+panel.addEventListener('touchstart', e => { const t = e.touches[0]; sw = { x: t.clientX, y: t.clientY, t: performance.now() }; }, { passive: true });
+panel.addEventListener('touchend', e => {
+  if (!sw) return; const t = e.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y, quick = performance.now() - sw.t < 700; sw = null;
+  if (quick && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.8) step(dx < 0 ? 1 : -1);   // swipe left for the next section
+}, { passive: true });
 document.getElementById('home').addEventListener('click', e => { if (!lofi()) { e.preventDefault(); toDesk(); } });
 
 scene.addEventListener('pointermove', e => {
