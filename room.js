@@ -138,11 +138,12 @@ function text(c, s, x, y, col) {
 // ---------- hotspots ----------
 const SPOTS = [
   { id: 'about', label: 'About', n: '01', x: 134, y: 90, w: 116, h: 60, line: '>ABOUT' },
-  { id: 'experience', label: 'Experience', n: '02', x: 300, y: 128, w: 66, h: 21, line: '>EXPERIENCE' },
+  { id: 'experience', label: 'Experience', n: '02', x: 300, y: 128, w: 63, h: 21, line: '>EXPERIENCE' },
+  { id: 'resources', label: 'Resources', n: '04', x: 366, y: 122, w: 23, h: 27, line: '>RESOURCES' },
   { id: 'contact', label: 'Contact', n: '05', x: 252, y: 121, w: 20, h: 29, line: '>CONTACT' },
   { id: 'writing', label: 'Writing', n: '03', x: 68, y: 144, w: 46, h: 13, line: '>WRITING' }
 ];
-const NAV_ONLY = [{ id: 'resources', label: 'Resources', n: '04', at: 'writing' }];   // panels without an object of their own; the camera turns to `at`
+const NAV_ONLY = [];   // panels without an object of their own ({ id, label, n, at }); the camera turns to `at`
 const SOURCES = { about: ['about', 'expertise'], experience: ['experience', 'education'], contact: ['contact'], writing: ['writing'], resources: ['resources'] };
 
 // ---------- the 40-inch curved ultrawide (21:9) ----------
@@ -721,7 +722,7 @@ function drawDesk(c) {
   r(c, 0, 146, W, 1, '#d8ae80');
   r(c, 0, 156, W, 3, '#a47a52'); r(c, 0, 156, W, 1, '#e0b88a'); r(c, 0, 158, W, 1, '#6a4a30');
   // shadows on the desk
-  for (const [x, w] of [[70, 42], [114, 14], [134, 116], [254, 18], [278, 14], [300, 64], [398, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
+  for (const [x, w] of [[70, 42], [114, 14], [134, 116], [254, 18], [278, 14], [300, 64], [367, 20], [398, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
   c.save(); c.translate(-60, 0);                                                    // lamp: right of the screen
   // minimal desk lamp on the right: black stem, arm and a small head over the phone
   ell(c, 344, 149, 6, 1.6, '#2a2a2e'); r(c, 338, 149, 13, 1, '#18181c');
@@ -790,6 +791,16 @@ function drawDesk(c) {
     r(c, 340 + dx + 4, y + 1, 8, 1, '#d8b85a');
   }
   ell(c, 351, 137.6, 3, 1.6, '#7e7e78'); ell(c, 350.2, 137, 1.6, .8, '#a8a8a0');
+  // an upright file holder with folders next to the books (it opens Resources)
+  r(c, 386, 133, 2, 16, 'rgba(20,12,8,.22)');                                       // shadow on the desk behind it
+  r(c, 372, 124, 13, 17, '#3f7f7a'); r(c, 372, 124, 13, 1, '#62a49d'); r(c, 384, 124, 1, 17, '#2e605c'); r(c, 379, 122, 5, 2, '#3f7f7a');   // a teal folder at the back, with its tab
+  r(c, 374, 126, 10, 2, '#f4efe4'); r(c, 375, 125, 7, 1, '#e6dfd0');                // papers peeking out
+  r(c, 369, 128, 14, 13, '#e4c78c'); r(c, 369, 128, 14, 1, '#f2dcae'); r(c, 382, 128, 1, 13, '#bf9c5e'); r(c, 369, 128, 1, 13, '#f0d8a8');   // a manila folder in front
+  r(c, 370, 126, 5, 2, '#e4c78c'); r(c, 370, 126, 5, 1, '#f2dcae');                // its tab
+  poly(c, [[367, 148], [367, 141], [370, 138], [386, 138], [386, 148]], '#34343a'); // the holder, its back higher than its front
+  poly(c, [[367, 141], [370, 138], [386, 138], [386, 139], [370.4, 139], [368, 141.6]], '#5a5a62');
+  r(c, 367, 141, 19, 1, '#4a4a52'); r(c, 385, 139, 1, 9, '#26262a');
+  r(c, 371, 143, 9, 3, '#e8e2d6'); r(c, 372, 144, 6, 1, '#8a8478');                 // a paper label on the front
   c.save(); c.translate(42, 0);                                                     // plant: at the new right end of the desk
   // plant in a white ceramic pot
   const LEAF = [[364, 118, 4, 11, -.5, '#4a7a46'], [370, 116, 4, 12, .4, '#3a6438'], [360, 124, 3, 9, -1.1, '#3a6438'], [374, 123, 3, 9, 1.0, '#4a7a46'], [367, 110, 3, 10, .05, '#5a8a50']];
@@ -975,7 +986,7 @@ const STILL_GEO = {
     clock: { x: 356.5, y: 33, h: 4.5, m: 7, s: 7.5, cover: 7.5, face: '#ebe2d0' }, shadows: false
   },
   mon: { x: 205, w: 87, cy: 95.7, h0: 41, k: .05 },
-  spots: { about: [202, 72, 93, 77], experience: [240, 18, 96, 47], cv: [159, 106, 39, 36], contact: [295, 110, 22, 30], writing: [56, 132, 47, 20] }
+  spots: { about: [202, 72, 93, 77], experience: [240, 18, 96, 47], cv: [159, 106, 39, 36], contact: [295, 110, 22, 30], writing: [56, 132, 47, 20] , resources: [56, 132, 47, 20]}
 };
 if (QS.get('still') === '1') {
   const img = new Image();
