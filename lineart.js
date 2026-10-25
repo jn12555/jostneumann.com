@@ -1,8 +1,8 @@
 // One-line print for the cabin wall (Personal Website, room.js). A classic script: it sets window.LINEART.
 // draw(t, put) paints the 32 x 92 picture at t seconds through put(x, y, '#rrggbb'); the picture depends only on t and loops
 // every T seconds. A single ink line on cream paper draws a subject, keeps it gently alive, then flows without lifting into
-// the next: a light bulb whose filament is a beating heart, a mountain village by a river under a rising sun, a tree whose
-// roots form a network, a seedling growing from a stack of coins, and a turning globe with a pin. Red marks the accents.
+// the next, in homage to famous works: Hokusai's Great Wave, Van Gogh's Starry Night, Banksy's Girl with Balloon, Picasso's
+// Dove of Peace, and a graffiti piece by the Berlin crew 1UP. Red marks the accents; some areas are sprayed in red.
 (function () {
   const W = 32, H = 92, N = 480, MORPH = 1.9, HOLD = 7.6, SEG = MORPH + HOLD, TAU = Math.PI * 2;
   const PAPER = '#f3eee5', GRAIN = '#e6e0d4', INK = '#1d1d22', SOFT = '#7a756c', RED = '#d6402f';
@@ -12,67 +12,73 @@
   const ease = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
   const arc = (cx, cy, rx, ry, a0, a1, n, f) => Array.from({ length: n + 1 }, (_, k) => { const a = a0 + (a1 - a0) * k / n, rr = f ? f(a) : 1; return [cx + Math.cos(a) * rx * rr, cy + Math.sin(a) * ry * rr]; });
-  const S = (pts, tag = 'ink') => ({ pts, tag });                       // one stroke of the line; between strokes the pen moves unseen
-  // the heartbeat: two beats close together, then a rest
-  const beat = t => { const q = (t * 1.05) % 1; return Math.exp(-Math.pow((q - .08) / .045, 2)) + .7 * Math.exp(-Math.pow((q - .27) / .05, 2)); };
+  const S = (pts, tag = 'ink', o = {}) => ({ pts, tag, ...o });         // one stroke of the line; between strokes the pen moves unseen; o.fill sprays its inside
 
-  // ---- the five subjects; each returns its strokes at time t (u = seconds since the subject was reached)
+  // ---- five homages, each in one line; they return their strokes at time t (u = seconds since the subject was reached)
+  const heartPts = (cx, cy, k, n = 40) => Array.from({ length: n + 1 }, (_, i) => { const a = Math.PI + TAU * i / n, s = Math.sin(a); return [cx + 16 * s * s * s * k, cy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * k]; });
   const SUBJECTS = [
-    (t) => {                                                             // a light bulb whose filament is a heart
-      const p = beat(t), k = .3 * (1 + .16 * p), hy = 32.5;
-      const heart = Array.from({ length: 41 }, (_, i) => { const a = Math.PI + TAU * i / 40, s = Math.sin(a); return [16 + 16 * s * s * s * k, hy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * k]; });
-      const tip = heart[0];
-      const out = [
-        S([[13, 48], [11.4, 42], ...arc(16, 31.5, 11, 11, 115 * Math.PI / 180, 425 * Math.PI / 180, 46), [20.6, 42], [19, 48], [13, 50], [19, 52], [13, 54], [19, 56], [13, 56], [14.5, 58], [16, 59.5], [17.5, 58], [19, 56]]),
-        S([[14.6, 47.5], tip]), S(heart, 'red'), S([tip, [17.4, 47.5]]),
-      ];
-      if (p > .25) for (const d of [200, 235, 270, 305, 340]) { const a = d * Math.PI / 180; out.push(S([[16 + Math.cos(a) * 13.2, 31.5 + Math.sin(a) * 13.2], [16 + Math.cos(a) * 15.6, 31.5 + Math.sin(a) * 15.6]], 'soft')); }
-      return out;
-    },
-    (t, u) => {                                                          // a mountain village by a winding river, under a rising sun
-      const sunY = 13 - clamp(u / 7) * 2.5, wv = y => Math.sin(t * 2.2 + y * .7) * .3;
+    (t) => {                                                             // after Hokusai, The Great Wave off Kanagawa: the curling wave, Fuji in the trough, a red seal
+      const sw = Math.sin(t * 1.4) * .7, ph = t * 2.2;
+      const wave = [[3, 82], [4, 70], [6, 58], [9, 46], [13, 36], [17, 29], [21, 25 + sw * .4], [25 + sw * .6, 24.2], [28 + sw, 26.4], [29.4 + sw, 30.4],
+        [28.2 + sw, 33.6], [26.8 + sw * .8, 31.2], [26.2 + sw * .8, 35], [24.6 + sw * .6, 32.4], [24, 36.4], [22.4, 33.8], [21.8, 37.8], [20.2, 35.4],
+        [19, 39.5], [17.6, 44.5], [17, 51], [18, 58], [20.5, 65], [24, 71], [29, 75]];
+      const sea = Array.from({ length: 14 }, (_, i) => [3 + i * 2, 85 + Math.sin(ph + i * 1.6) * 1.1]);
       return [
-        S([[3, 50], [8, 39], [11, 43], [16, 19], [21, 33], [24, 29.5], [29, 47]]),
-        S([[13.8, 28], [14.8, 30.5], [16, 27.5], [17.3, 30.5], [18.4, 28.5]]),
-        S(arc(25, sunY, 3, 3, 0, TAU, 18), 'red'),
-        S([[3, 64], [6, 64], [6, 58.5], [9, 55], [12, 58.5], [12, 64], [14, 64], [14, 60], [16.5, 57], [19, 60], [19, 64], [22, 64], [22, 56.5], [23.5, 54], [25, 56.5], [25, 64], [29, 64]]),
-        S([[23.5, 54], [23.5, 51.5]]), S([[22.6, 52.4], [24.4, 52.4]]), S([[9, 64], [9, 61.5]]),
-        S([[15, 66], [11.5, 72], [14, 79], [9.5, 86]].map(([x, y]) => [x + wv(y), y]), 'water'),
-        S([[18, 66], [15.5, 72], [18.5, 79], [15.5, 86]].map(([x, y]) => [x + wv(y), y]), 'water'),
+        S(wave), S([[6, 74], [9, 60], [13, 49], [17.5, 40]]), S([[10, 79], [12, 68], [15, 58]]), S([[14, 33], [18.5, 29.5], [23, 28]]),
+        S([[20, 84], [24, 77], [25.5, 76], [27, 77], [29, 82]]), S([[23, 79], [24.2, 78.2], [25.4, 79.6], [26.6, 78.2], [27.6, 79.2]]),
+        S([[6, 83], [15, 81]]), S(sea),
+        S([[25, 4], [29, 4], [29, 12], [25, 12], [25, 4]], 'red', { fill: RED }),
       ];
     },
-    (t) => {                                                             // a tree whose roots spread as a network
-      const sway = y => Math.sin(t * 1.15) * clamp((52 - y) / 30) * .9;
-      const crown = arc(16, 27, 11, 10.5, Math.PI * .62, Math.PI * 2.38, 60, a => 1 + .06 * Math.sin(a * 9)).map(([x, y]) => [x + sway(y), y]);
+    (t) => {                                                             // after Van Gogh, The Starry Night: the cypress, a turning swirl, stars and a red crescent
+      const rot = t * .55, sp = (cx, cy, r0, r1, turns, n) => Array.from({ length: n + 1 }, (_, i) => { const q = i / n, a = rot + q * turns * TAU, r = r0 + (r1 - r0) * q; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r * .85]; });
+      const star = (x, y, i) => S(arc(x, y, .8 + .5 * Math.max(0, Math.sin(t * 2.4 + i * 1.7)), .8 + .5 * Math.max(0, Math.sin(t * 2.4 + i * 1.7)), 0, TAU, 8));
+      const flow = Array.from({ length: 10 }, (_, i) => [12 + i * 1.9, 51 + Math.sin(t * 1.3 + i * .9) * 1.2]);
       return [
-        S([[4, 54], [14.4, 54], [15, 41], ...crown, [17.2, 41], [17.6, 54], [28, 54]]),
-        S([[15.6, 42], [12.6, 35.5]].map(([x, y]) => [x + sway(y), y])), S([[16.8, 42], [19.6, 35.5]].map(([x, y]) => [x + sway(y), y])),
-        S(arc(21.5 + sway(23), 23, 1.7, 1.7, 0, TAU, 10), 'red'),
-        S([[15, 54], [10, 62], [6, 70], [4, 80]]), S([[10, 62], [12, 72], [9, 84]]),
-        S([[17, 54], [22, 63], [26, 72], [28, 82]]), S([[22, 63], [19, 74], [21, 85]]), S([[16, 54], [16.2, 66], [15, 78]]),
-        S(arc(10, 62, .9, .9, 0, TAU, 6)), S(arc(22, 63, .9, .9, 0, TAU, 6)), S(arc(16.2, 66, .9, .9, 0, TAU, 6)),
+        S([[6, 86], [4.5, 78], [5.5, 72], [3.5, 64], [5, 56], [3.8, 48], [5.6, 40], [5, 32], [6.8, 24], [7.6, 14], [8.8, 24], [10.6, 32], [9.6, 40], [11.4, 48], [10, 56], [11.6, 64], [9.8, 72], [10.8, 78], [9.5, 86]].map(([x, y]) => [7.6 + (x - 7.6) * 1.55 + Math.sin(t * 2 + y * .3) * .35, y])),
+        S([[6.4, 80], [6, 66], [7, 52], [6.6, 38], [7.6, 24]].map(([x, y]) => [7.6 + (x - 7.6) * 1.55, y])), S([[8.6, 76], [9, 60], [8.4, 46], [8.6, 32]].map(([x, y]) => [7.6 + (x - 7.6) * 1.55, y])),
+        S(sp(19, 30, .8, 7.5, 2, 44)), S(sp(25, 43, .6, 3.4, 1.4, 20)), S(flow),
+        S([...arc(25.5, 13, 3, 3, -.9, Math.PI + .9, 16), ...arc(26.6, 12.2, 2.4, 2.4, Math.PI + .7, -.7, 14)], 'red', { fill: RED }),
+        star(14, 15, 0), star(20.5, 11, 1), star(12.5, 38, 2), star(27.5, 30, 3),
+        S([[11, 64], [16, 61], [22, 63], [29, 60]]),
+        S([[11, 74], [13, 74], [13, 70], [15, 68], [17, 70], [17, 74], [19, 74], [19, 71], [21, 69.5], [23, 71], [23, 74], [24.5, 74], [24.5, 66], [25.5, 61], [26.5, 66], [26.5, 74], [29, 74]]),
       ];
     },
-    (t, u) => {                                                          // a seedling growing from a stack of coins
-      const grow = .82 + .18 * clamp(u / 5), lean = Math.sin(t * 1.3) * .1;
-      const top = [16 + Math.sin(t * 1.3) * .8, 72 - 31 * grow];
-      const stem = Array.from({ length: 13 }, (_, i) => { const q = i / 12; return [16 + Math.sin(q * Math.PI) * 1.6 + (top[0] - 16) * q, 72 - (72 - top[1]) * q]; });
-      const leaf = (bx, by, len, ang) => { const pts = []; for (let i = 0; i <= 12; i++) { const q = i / 12, w = Math.sin(q * Math.PI) * len * .38; pts.push([bx + Math.cos(ang) * len * q - Math.sin(ang) * w, by + Math.sin(ang) * len * q + Math.cos(ang) * w]); } for (let i = 12; i >= 0; i--) { const q = i / 12, w = Math.sin(q * Math.PI) * len * .38; pts.push([bx + Math.cos(ang) * len * q + Math.sin(ang) * w, by + Math.sin(ang) * len * q - Math.cos(ang) * w]); } return pts; };
-      const mid = stem[7];
+    (t) => {                                                             // after Banksy, Girl with Balloon: the red heart drifts away, the girl reaches after it
+      const bx = 21 + Math.sin(t * .5) * 1.6, by = 24 + Math.sin(t * .7) * 2, heart = heartPts(bx, by, .28), tip = heart[0];
+      const hair = Math.sin(t * 1.6) * .8, swing = Math.sin(t * .9) * 1.4;
       return [
-        S([[9, 72], [9, 84], ...arc(16, 84, 7, 1.9, Math.PI, 0, 14), [23, 72], ...arc(16, 72, 7, 1.9, 0, -Math.PI, 14), ...arc(16, 72, 7, 1.9, Math.PI, 0, 14)]),
-        S(arc(16, 76, 7, 1.9, Math.PI, 0, 14)), S(arc(16, 80, 7, 1.9, Math.PI, 0, 14)),
-        S(stem), S(leaf(mid[0], mid[1], 11 * grow, Math.PI + .5 + lean)), S(leaf(top[0], top[1] + 4, 10 * grow, -.5 + lean)),
-        S(arc(top[0], top[1] - 1.2, 1.2, 1.2, 0, TAU, 8), 'red'),
+        S(heart, 'red', { fill: RED }),
+        S([tip, [tip[0] - 1 + swing, tip[1] + 11], [16.5 + swing * .5, 50], [15.4, 61]]),
+        S(arc(9, 65.5, 2.5, 2.6, 0, TAU, 14)), S([[7, 64], [4.2, 63 + hair], [3.2, 65 + hair]]), S([[7.2, 66.5], [4.6, 67.5 + hair]]),
+        S([[9.6, 69.5], [12.6, 66], [15.2, 62.5]]), S([[8.4, 69.5], [5.4, 74]]),
+        S([[8.6, 68.5], [5.6, 80], [12.8, 80], [10, 68.5]]),
+        S([[7.6, 80], [7.2, 86], [5.6, 86]]), S([[10.6, 80], [11, 86], [12.6, 86]]),
       ];
     },
-    (t) => {                                                             // a globe turning on its stand, with a pin
-      const rot = t * .45, bob = Math.abs(Math.sin(t * 2.1)) * .9, out = [S(arc(16, 36, 12, 12, -Math.PI / 2, Math.PI * 1.5, 48))];
-      for (let k = 0; k < 3; k++) { const rx = 12 * Math.cos(rot + k * Math.PI / 3); out.push(S(arc(16, 36, Math.abs(rx), 12, -Math.PI / 2, Math.PI / 2, 18))); }
-      out.push(S([[4, 36], [28, 36]]), S([[5.6, 30], [26.4, 30]]), S([[5.6, 42], [26.4, 42]]));
-      out.push(S([...arc(16, 36, 14.5, 14.5, -Math.PI * .62, -Math.PI * 1.42, 22).reverse(), [16, 50.5], [16, 56], [10, 58], [22, 58], [16, 56]]));
-      out.push(S([[20.5, 29.5], [20.5, 24.5 - bob]]), S(arc(20.5, 22.8 - bob, 1.8, 1.8, 0, TAU, 10), 'red'));
-      return out;
+    (t) => {                                                             // after Picasso, Dove of Peace: one line, the wings beating, a red olive branch
+      const f = Math.sin(t * 1.7) * 2.6;
+      const big = st => ({ ...st, pts: st.pts.map(([x, y]) => [16 + (x - 16) * 1.14, 42 + (y - 42) * 1.14]) });
+      return [
+        S([[5, 54], [9, 50.5], [13, 47], [11, 37], [14, 30 - f * .3], [17, 26 - f * .6], [22.5, 21.5 - f], [19.5, 31], [18.4, 39], [21, 39.5], [24, 39], [27, 40.6], [24.2, 42.6], [19.5, 47], [13, 51.5], [5, 57], [8.4, 53.2]]),
+        S([[15.4, 44], [15.8, 35], [18.6, 28.5 - f * .6], [20.2, 26 - f * .8]]),
+        S(arc(24.3, 40.1, .45, .45, 0, TAU, 6)),
+        S([[26.6, 41.2], [28, 45], [28.6, 49]], 'red'),
+        S(arc(26.2, 44.2, 1.3, .7, 0, TAU, 8), 'red', { fill: RED }), S(arc(29.2, 46.3, 1.3, .7, 0, TAU, 8), 'red', { fill: RED }), S(arc(27, 48.4, 1.3, .7, 0, TAU, 8), 'red', { fill: RED }),
+        S([[8, 72], [11, 70.5], [14, 72], [17, 70.5]], 'soft'), S([[15, 78], [18, 76.5], [21, 78], [24, 76.5]], 'soft'),
+      ].map(big);
+    },
+    (t, u) => {                                                          // a graffiti piece by 1UP: block letters with a 3D shadow, sprayed red, with drips
+      const ONE = [[9, 11], [16, 7], [19.5, 7], [19.5, 26], [23, 26], [23, 31], [9, 31], [9, 26], [13, 26], [13, 15], [9, 16], [9, 11]];
+      const U = [[6, 35], [12, 35], [12, 50], [20, 50], [20, 35], [26, 35], [26, 52.5], [22, 57], [10, 57], [6, 52.5], [6, 35]];
+      const P = [[7, 61], [21, 61], [26, 65], [26, 72], [21, 76], [13, 76], [13, 84], [7, 84], [7, 61]];
+      const HOLE = [[13, 66], [19, 66], [20, 68], [20, 69.5], [19, 71], [13, 71], [13, 66]];
+      const sh = pts => pts.map(([x, y]) => [x + 1.6, y + 1.6]), drip = clamp((u - 3) / 4);
+      return [
+        S(sh(ONE), 'soft'), S(sh(U), 'soft'), S(sh(P), 'soft'),
+        S(ONE, 'ink', { fill: RED }), S(U, 'ink', { fill: RED }), S(P, 'ink', { fill: RED, holes: [HOLE] }), S(HOLE),
+        S([[15, 31], [15, 31.5 + 3 * drip]], 'red'), S([[11, 57], [11, 57.5 + 2.4 * drip]], 'red'), S([[21, 56], [21, 56.5 + 3.4 * drip]], 'red'), S([[9, 84], [9, 84.5 + 2.6 * drip]], 'red'),
+      ];
     },
   ];
   const T = SUBJECTS.length * SEG;
@@ -93,7 +99,20 @@
     return out;
   }
   const colour = tag => tag === 'red' ? RED : tag === 'soft' ? SOFT : INK;
-  const GLYPH = { J: '001001001101010', N: '110101101101101' };
+  // red areas sprayed in once the line has arrived (even-odd inside test, holes left open), with a little speckle
+  const inside = (x, y, pts) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+  function fills(strokes, put, amt) {
+    if (amt <= 0) return;
+    for (const s of strokes) {
+      if (!s.fill) continue;
+      const xs = s.pts.map(p => p[0]), ys = s.pts.map(p => p[1]);
+      for (let y = Math.max(0, Math.floor(Math.min(...ys))); y <= Math.min(H - 1, Math.ceil(Math.max(...ys))); y++)
+        for (let x = Math.max(0, Math.floor(Math.min(...xs))); x <= Math.min(W - 1, Math.ceil(Math.max(...xs))); x++) {
+          if (!inside(x + .5, y + .5, s.pts) || (s.holes || []).some(h => inside(x + .5, y + .5, h))) continue;
+          if (rnd(x * 3 + 1, y * 5 + 2) < amt) put(x, y, rnd(x, y * 2) < .14 ? mix(s.fill, '#ffffff', .28) : s.fill);
+        }
+    }
+  }
   function line(put, x0, y0, x1, y1, col) {                            // Bresenham, so the ink stays crisp
     x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
     const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy;
@@ -112,10 +131,12 @@
       const edge = Math.min(x, W - 1 - x, y, H - 1 - y), g = rnd(x, y) < .05 ? .55 : 0;
       put(x, y, mix(PAPER, GRAIN, Math.max(g, edge < 2 ? .45 - edge * .2 : 0)));
     }
-    const B = resample(SUBJECTS[s](t, local));
+    const SB = SUBJECTS[s](t, local), B = resample(SB), SA = local < MORPH ? SUBJECTS[prev](t - local + .001, HOLD + MORPH) : null;
+    fills(SB, put, clamp((local - MORPH * .8) / 1.6));                 // this subject's red areas are sprayed in as the line arrives
+    if (SA) fills(SA, put, 1 - clamp(local / (MORPH * .55)));          // and the last subject's fade as it leaves
     let P = B;
     if (local < MORPH) {                                               // the line flows from the last subject into this one, a wave along its length
-      const A = resample(SUBJECTS[prev](t - local + .001, HOLD + MORPH));
+      const A = resample(SA);
       P = B.map((b, i) => {
         const a = A[i], q = ease(clamp((local / MORPH - (i / N) * .4) / .6)), wob = Math.sin(q * Math.PI) * 1.4;
         return { x: a.x + (b.x - a.x) * q + Math.sin(i * .21 + local * 5) * wob * .4, y: a.y + (b.y - a.y) * q - wob, tag: q < .5 ? a.tag : b.tag, vis: q < .5 ? a.vis : b.vis, q };
@@ -123,15 +144,6 @@
     }
     for (let i = 1; i < N; i++) if (P[i].vis) line(put, P[i - 1].x, P[i - 1].y, P[i].x, P[i].y, colour(P[i].tag));
     if (local < MORPH) for (const p of P) if (p.q > .15 && p.q < .85 && rnd(p.x * 7 | 0, p.y * 3 | 0) < .04) { const x = Math.round(p.x), y = Math.round(p.y); if (x >= 0 && x < W && y >= 0 && y < H) put(x, y, SOFT); }   // a little ink in the air
-    if (s === 2 && local >= MORPH) {                                   // a red signal travelling along the roots
-      const ROOT = [[16, 54], [16.2, 66], [12, 72], [9, 84]], q = ((t * .35) % 1), seg = Math.min(2, Math.floor(q * 3)), f = q * 3 - seg;
-      const x = ROOT[seg][0] + (ROOT[seg + 1][0] - ROOT[seg][0]) * f, y = ROOT[seg][1] + (ROOT[seg + 1][1] - ROOT[seg][1]) * f;
-      put(Math.round(x), Math.round(y), RED);
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const px = Math.round(x) + dx, py = Math.round(y) + dy; if (px >= 0 && px < W && py >= 0 && py < H) put(px, py, mix(PAPER, RED, .35)); }
-    }
-    // the artist's initials, small and in red pencil
-    let cx = 24;
-    for (const ch of 'JN') { const g = GLYPH[ch]; for (let i = 0; i < 15; i++) if (g[i] === '1') put(cx + i % 3, 85 + (i / 3 | 0), mix(PAPER, RED, .7)); cx += 4; }
   }
   window.LINEART = { W, H, T, draw };
 })();
