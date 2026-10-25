@@ -1195,7 +1195,7 @@ function layout() {
   vw = innerWidth; vh = innerHeight;
   portrait = vw <= 760 || vw / vh <= 1;
   // portrait: a band under the header, leaving room below for the name and the section buttons
-  s0 = portrait ? Math.max(.7, Math.min(vw / 262, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);
+  s0 = portrait ? Math.max(.7, Math.min(vw / 320, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);   // phones: the print, the window, the screen and the phone fit side by side
   document.documentElement.style.setProperty('--band-bottom', Math.round(HEAD + VH * s0) + 'px');
   stackPortrait();
   if (!openId) { goal.fx = VW / 2; goal.fy = portrait ? 128 : 132; }
@@ -1469,10 +1469,7 @@ function frame(now) {
     PX += (tx - PX) * kp; PY += (ty - PY) * kp;
   }
   DDX = stillMode ? 0 : -Math.round(PX); DDY = stillMode ? 0 : -Math.round(PY * .6);
-  if (portrait && !openId) {                                                  // phones show only part of the room: glide to the print on the wall and back
-    if (reduce) goal.fx = 150;                                                 // a still view that keeps part of the print in sight
-    else { const q = (t + 8) % 26, sm = v => v * v * (3 - 2 * v), w = q < 12 ? 0 : q < 15 ? sm((q - 12) / 3) : q < 22 ? 1 : q < 25 ? 1 - sm((q - 22) / 3) : 0; goal.fx = VW / 2 - (VW / 2) * w; }
-  }
+  if (portrait && !openId) goal.fx = 0;                                      // phones: the view starts at the left wall, so the framed print is always in it
   const k = 1 - Math.exp(-Math.min(.4, rawDt) * 5.5);                         // the camera uses real time, so it arrives on time on slow devices too
   for (const key of ['fx', 'fy', 'z', 'p']) cur[key] += (goal[key] - cur[key]) * k;
   place();
