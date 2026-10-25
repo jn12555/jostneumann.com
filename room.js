@@ -465,6 +465,15 @@ function vegLayers(E, S, snowC) {
   VEG = { env: E, back, front };
   return VEG;
 }
+// ---------- moments in the landscape: wildlife and weather that appear now and then, by time of day and season ----------
+// Each moment repeats on its own cycle; place, direction and size change every cycle (seeded), so the view never loops visibly.
+const moment = (t, period, seed) => { const k = Math.floor(t / period); return { k, s: t - k * period, r: i => hash(k * 7919 + seed * 104729 + i * 31) }; };
+// stretches of bank and river that no near-bank tree or desk object hides, so a moment is actually seen
+const DEER_SPANS = [[24, 124], [284, 334], [352, 390]], FISH_SPANS = [[62, 110], [282, 300], [352, 392]];
+const spot = (u, spans) => { let v = u * spans.reduce((a, [x0, x1]) => a + x1 - x0, 0); for (const [x0, x1] of spans) { if (v < x1 - x0) return x0 + v; v -= x1 - x0; } return spans[0][0]; };
+const SFX = []; let fishK = -1, ducksOn = false;   // sounds for the soundscape to play (a splash, the ducks)
+function flap(c, x, y, up, col, w = 1) { r(c, x - w, y - up, w, 1, col); r(c, x, y, 1, 1, col); r(c, x + 1, y - up, w, 1, col); }
+
 function drawOutside(c, t) {
   const E = ENV, S = SEASON, snowC = mix('#f2f6fb', E.riverMid, .3);
   c.save(); c.beginPath(); c.rect(...GEO.clip); c.clip(); c.translate(0, GEO.outDY);
@@ -482,12 +491,50 @@ function drawOutside(c, t) {
     c.fillStyle = rgba(mix(E.skyLow, '#8e949e', .55), .38); c.fillRect(-10, -10, W + 20, SKY + 14);
     for (let k = 0; k < 6; k++) { const cx = ((k * 83 + t * (1.2 + k * .3)) % (W + 120)) - 60; ell(c, cx, 10 + k * 9, 70 + k * 8, 7, rgba(mix(E.skyMid, '#a4a8b2', .5), .22)); }
   }
-  for (let fl = 0; fl < 2; fl++) {                                                   // two flocks of birds
-    const bp = ((t + fl * 6) % 13) / 7, bird = mix('#2a2438', '#3a3a48', 1 - E.lamp);
-    if (bp < 1) for (let k = 0; k < 4; k++) {
-      const bx = -8 + bp * (W + 16) - k * 6, by = 26 + fl * 14 + k * 2 + Math.sin(t * 2 + k) * .8, up = Math.floor(t * 4 + k) % 2;
-      r(c, bx - 1, by - up, 1, 1, bird); r(c, bx, by, 1, 1, bird); r(c, bx + 1, by - up, 1, 1, bird);
+  // a faint rainbow opposite the sun when sun and rain meet, morning or late afternoon; it comes and goes slowly
+  if (RAIN && body && body.sun && body.lift < .6) {
+    const fade = clamp((Math.sin(t * .021) - .2) * 1.6) * clamp((.6 - body.lift) * 4), cx = W - body.x, cy = SKY + 34;
+    if (fade > .01) {
+      c.save(); c.beginPath(); c.rect(-10, -10, W + 20, SKY + 2); c.clip(); c.lineWidth = 1.7;
+      ['#e8584e', '#eaa048', '#e8dc6a', '#6cc47a', '#5c94e0', '#8a68c8'].forEach((col, i) => { c.strokeStyle = rgba(col, .16 * fade); c.beginPath(); c.arc(cx, cy, 108 - i * 1.7, Math.PI, TAU); c.stroke(); });
+      c.strokeStyle = rgba('#ffffff', .05 * fade); c.lineWidth = 9; c.beginPath(); c.arc(cx, cy, 98, Math.PI, TAU); c.stroke();   // the brighter sky inside the bow
+      c.restore();
     }
+  }
+  const birdC = mix('#2a2438', '#3a3a48', 1 - E.lamp), dayA = 1 - E.lamp;
+  if (dayA > .2) for (let fl = 0; fl < 2; fl++) {                                     // small flocks crossing either way at different heights
+    const P = 17 + fl * 6, m = moment(t + fl * 7, P, 3 + fl), dur = 8 + m.r(1) * 5, pr = m.s / dur;
+    if (pr < 1) {
+      const dir = m.r(2) < .5 ? 1 : -1, n = 2 + (m.r(3) * 5 | 0), y0 = 14 + m.r(4) * 44;
+      for (let k = 0; k < n; k++) {
+        const bx = (dir > 0 ? -10 + pr * (W + 20) : W + 10 - pr * (W + 20)) - dir * (k * 5 + hash(k + m.k) * 3), by = y0 + (k % 2 ? 2 : -1) * Math.ceil(k / 2) + Math.sin(t * 2 + k) * .8;
+        flap(c, bx, by, Math.floor(t * 4 + k) % 2, birdC);
+      }
+    }
+  }
+  if (dayA > .4 && (S === SEASONS.spring || S === SEASONS.autumn)) {                  // geese in a V with slow wingbeats: north in spring, south in autumn
+    const m = moment(t, 46, 9), pr = m.s / 16;
+    if (pr < 1) {
+      const dir = S === SEASONS.autumn ? -1 : 1, y0 = 20 + m.r(1) * 14;
+      for (let k = 0; k < 7; k++) {
+        const side = k === 0 ? 0 : (k % 2 ? 1 : -1), rank = Math.ceil(k / 2);
+        flap(c, (dir > 0 ? -24 + pr * (W + 48) : W + 24 - pr * (W + 48)) - dir * rank * 5, y0 + side * rank * 2.5 + Math.sin(t + k) * .4, Math.floor(t * 2.2 + k * .5) % 2, birdC, 2);
+      }
+    }
+  }
+  if (dayA > .5) {                                                                    // a buzzard circling high over the mountains
+    const m = moment(t, 70, 5);
+    if (m.s < 38) {
+      const a = t * .3, x = 70 + m.r(1) * (W - 140) + Math.cos(a) * 20, y = 22 + m.r(2) * 14 + Math.sin(a) * 5, bank = Math.cos(a) > 0 ? 1 : 0;
+      const al = clamp(Math.min(m.s, 38 - m.s) / 3); c.globalAlpha = al;
+      r(c, x - 3, y + bank, 2, 1, birdC); r(c, x - 1, y, 3, 1, birdC); r(c, x + 2, y + 1 - bank, 2, 1, birdC); r(c, x, y + 1, 1, 1, birdC);
+      c.globalAlpha = 1;
+    }
+  }
+  const duskish = (E.hour > 18.6 && E.hour < 21.8) || (E.hour > 4.8 && E.hour < 6.4);
+  if (duskish && S !== SEASONS.winter) for (let i = 0; i < 4; i++) {                 // bats at dusk, quick and erratic
+    const x = ((i * 97 + t * (9 + i * 2)) % (W + 40)) - 20 + Math.sin(t * 2.3 + i * 3) * 14, y = 30 + i * 9 + Math.sin(t * 3.7 + i) * 6 + Math.sin(t * 9 + i) * 1.5;
+    flap(c, x, y, Math.floor(t * 12 + i) % 2, '#16121c');
   }
   c.restore();
 
@@ -505,6 +552,61 @@ function drawOutside(c, t) {
     }
   }
   if (S.snow) { const ice = mix('#dfe8f2', E.riverMid, .3); r(g, -10, RIV0, W + 20, 1, ice); r(g, -10, RIV1 - 4, W + 20, 3, ice); }
+  ducksOn = false;
+  // a deer comes down to drink on the far bank (not at night), with its reflection in the water
+  if (E.lamp < .85) {
+    const m = moment(t, 80, 21), st = m.s;
+    if (st < 34) {
+      const x0 = spot(m.r(1), DEER_SPANS), dir = m.r(4) < .5 ? 1 : -1;
+      const walk = st < 7 ? st / 7 : st > 27 ? 1 - (st - 27) / 7 : 1, x = x0 + dir * (walk - 1) * 16, y = RIV0 - 1;
+      const drink = st > 8 && st < 26 && Math.floor((st - 8) / 3) % 3 !== 2, step = walk < 1 && walk > 0 ? Math.floor(t * 6) % 2 : 0;
+      const col = mix('#a8683c', E.pineNear, .15), lite = mix(col, '#f0d0a0', .3), dark = mix(col, '#000000', .4), fx = x + dir * 3;
+      const deer = (yy, flip) => {
+        const Y = v => flip ? 2 * y + 1 - v : v, R = (xx, v, w, h, c2) => r(g, xx, flip ? Y(v + h - 1) : v, w, h, c2);
+        R(x - 3, yy - 5, 7, 3, col); R(x - 3, yy - 5, 7, 1, lite);                                                 // body, lit back
+        R(x - 3, yy - 2, 1, 2 + (step ? 0 : 1) - 1, dark); R(x - 2, yy - 2, 1, 2, dark); R(x + 2, yy - 2, 1, 2, dark); R(x + 3, yy - 2, 1, 2 - step + 0, dark);   // legs
+        if (drink) { R(fx, yy - 4, 1, 2, col); R(fx + (dir > 0 ? 0 : -1), yy - 2, 2, 2, col); }                   // neck down, head at the water
+        else { R(fx, yy - 8, 1, 4, col); R(fx + (dir > 0 ? 0 : -2), yy - 9, 3, 2, col); R(fx - dir, yy - 10, 1, 1, dark); R(fx + dir, yy - 8, 1, 1, dark); }   // neck, head, ear, nose
+        R(x - dir * 4, yy - 5, 1, 2, mix('#f4ecdf', E.pineNear, .1));                                             // white tail
+      };
+      g.globalAlpha = clamp(Math.min(st, 34 - st) / 1.5); deer(y, false);
+      g.globalAlpha *= .22; deer(y, true); g.globalAlpha = 1;
+    }
+  }
+  // a fish jumps now and then: an arc, two splash rings and a few drops
+  {
+    const m = moment(t, 6.5, 33), st = m.s;
+    if (st < 1.3) {
+      const x0 = spot(m.r(1), FISH_SPANS), y0 = RIV0 + 6 + m.r(3) * 6, dir = m.r(4) < .5 ? 1 : -1;
+      if (st < .7) { const ph = st / .7, x = x0 + dir * ph * 6, y = y0 - Math.sin(ph * Math.PI) * 6; r(g, x - 1, y, 3, 1, mix('#eef3f8', E.riverMid, .1)); r(g, x - dir * 2, y + (ph < .5 ? 1 : -1), 1, 1, mix('#a8b2be', E.riverMid, .15)); }
+      for (const [cx0, t0] of [[x0, 0], [x0 + dir * 6, .7]]) {
+        const ph = (st - t0) / .6;
+        if (ph > 0 && ph < 1) {
+          g.strokeStyle = rgba(E.ripple, (1 - ph) * .55); g.lineWidth = 1; g.beginPath(); g.ellipse(cx0, y0, .5 + ph * 7, (.5 + ph * 7) * .35, 0, 0, TAU); g.stroke();
+          if (ph < .35) { r(g, cx0 - 1, y0 - 2 - ph * 6, 1, 1, rgba(E.ripple, .7)); r(g, cx0 + 1, y0 - 1 - ph * 5, 1, 1, rgba(E.ripple, .7)); }
+        }
+      }
+      if (m.k !== fishK && st > .66) { fishK = m.k; SFX.push('splash'); }
+    }
+  }
+  // a duck with three ducklings paddles across, leaving a soft V wake (not in winter)
+  if (!S.snow && E.lamp < .9) {
+    const m = moment(t, 64, 41), st = m.s, dur = 44;
+    if (st < dur) {
+      ducksOn = true;
+      const dir = m.r(1) < .5 ? 1 : -1, y0 = RIV0 + 5 + m.r(2) * 4, pr = st / dur, x0 = dir > 0 ? -14 + pr * (W + 28) : W + 14 - pr * (W + 28);
+      const wake = rgba(E.ripple, .22);
+      strokePath(g, [[x0 - dir * 2, y0 + 1], [x0 - dir * 13, y0 + 3.5]], wake); strokePath(g, [[x0 - dir * 2, y0], [x0 - dir * 13, y0 - 1.5]], wake);
+      const brown = mix('#7a5a3a', E.riverMid, .15), head = mix('#5a4028', E.riverMid, .15);
+      const bob = Math.round(Math.sin(t * 2) * .4);
+      r(g, x0 - 3, y0 - 1 + bob, 7, 2, brown); r(g, x0 - 3 + (dir > 0 ? 0 : 3), y0 - 2 + bob, 4, 1, mix(brown, '#000000', .2));   // body, back and tail
+      r(g, x0 + dir * 3 + (dir > 0 ? 0 : -1), y0 - 4 + bob, 2, 3, head); r(g, x0 + dir * 5 - (dir > 0 ? 0 : 1), y0 - 3 + bob, 1, 1, '#e0a030');   // head, bill
+      for (let k = 1; k <= 3; k++) {
+        const x = x0 - dir * (5 + k * 4 + Math.sin(t * 1.3 + k) * .8), y = y0 + (k % 2 ? 1 : 0);
+        r(g, x - 1, y - 1, 3, 1, mix('#d4b060', E.riverMid, .15)); r(g, x + dir, y - 2, 1, 1, mix('#b89040', E.riverMid, .15));
+      }
+    }
+  }
   G(1.0); g.drawImage(V.front, 0, 0);
   // a heron fishing by the far post, cattails and meadow grass moving in the wind
   const dip = reduce ? 0 : Math.max(0, Math.sin(((t % 12) - 8) / 4 * Math.PI)) * ((t % 12) > 8 ? 1 : 0);
@@ -519,6 +621,17 @@ function drawOutside(c, t) {
   }
   const blade = mix(reed, bankC, .3);
   GRASS.forEach((q, i) => { if (i % 3) return; const sw = reduce ? 0 : Math.sin(t * 1.1 + q.p) * 1.2; strokePath(g, [[q.x, q.y], [q.x + sw, q.y - q.h]], blade, 1); });
+  if (E.lamp > .2) {                                                                  // a fox trots across the meadow at dawn, dusk and in the evening
+    const m = moment(t, 95, 57), st = m.s, dur = 10;
+    if (st < dur) {
+      const dir = m.r(1) < .5 ? 1 : -1, pr = st / dur, x = dir > 0 ? -16 + pr * (W + 32) : W + 16 - pr * (W + 32), y = 174 + m.r(2) * 7, stp = Math.floor(t * 8) % 2;
+      const fc = '#c8642e', dk = '#6a3418', o = v => dir > 0 ? v : -v - 1;      // o() mirrors x offsets for a fox running left
+      r(g, x + o(-3) - (dir > 0 ? 0 : 5), y - 3, 6, 2, fc);                                                    // body
+      r(g, x + o(3) - (dir > 0 ? 0 : 1), y - 4, 2, 2, fc); r(g, x + o(5), y - 3, 1, 1, '#2a1a10'); r(g, x + o(3), y - 5, 1, 1, dk);   // head, nose, ear
+      r(g, x + o(-6) - (dir > 0 ? 0 : 2), y - 3, 3, 1, fc); r(g, x + o(-7), y - 3, 1, 1, '#f2eadf');           // tail with its white tip
+      for (const [lx, ph] of [[-2, 0], [-1, 1], [1, 1], [2, 0]]) r(g, x + o(lx), y - 1, 1, (stp + ph) % 2 ? 2 : 1, dk);   // legs
+    }
+  }
   g.setTransform(1, 0, 0, 1, 0, 0);
   if (E.shadeA > .01) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = rgba(E.shadeCol, E.shadeA); g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over'; }
   c.drawImage(LAND, 0, 0);
@@ -561,7 +674,9 @@ function drawOutside(c, t) {
       const ph = ((t + q.p) % q.d) / q.d, rr = .5 + ph * 4;
       c.strokeStyle = rgba(E.ripple, (1 - ph) * .35 * dim); c.lineWidth = 1; c.beginPath(); c.ellipse(q.x + px, q.y + py, rr, rr * .35, 0, 0, TAU); c.stroke();
     }
+    const gust = .55 + .45 * (Math.sin(t * .061) * .5 + .5);                         // the rain comes and goes in gentle gusts
     for (const q of DROPS) {                                                         // streaks, slightly slanted by a light wind
+      if (q.x > gust) continue;
       const y = ((q.y * 210 + t * (95 + q.v * 55)) % 210) - 12, x = ((q.x * (W + 30) + y * .22) % (W + 30)) - 15;
       const a = (.16 + q.v * .16) * dim;
       r(c, x + px, y + py, 1, q.l, `rgba(214,224,238,${a})`); r(c, x + px + 1, y + py + q.l, 1, 1, `rgba(214,224,238,${a * .6})`);
@@ -1285,8 +1400,24 @@ function cricket(vol) {
   g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol * .5, t + .02); g2.gain.linearRampToValueAtTime(0, t + .35);
   am.connect(ag); ag.connect(g2.gain); o2.connect(g2); g2.connect(dry); o2.start(t); am.start(t); o2.stop(t + .4); am.stop(t + .4);
 }
+function splash() {
+  const len = AC.sampleRate * .3, b = AC.createBuffer(1, len, AC.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (AC.sampleRate * .06));
+  const src = AC.createBufferSource(), lp = filt('lowpass', 1100), g2 = gain(.07); src.buffer = b; src.connect(lp); lp.connect(g2); g2.connect(bus); src.start();
+  drop(.05);
+}
+function quack() {
+  for (let k = 0; k < 2; k++) {
+    const t = AC.currentTime + k * .16, o2 = AC.createOscillator(), bp = filt('bandpass', 1000, 2.5), g2 = AC.createGain();
+    o2.type = 'sawtooth'; o2.frequency.setValueAtTime(440, t); o2.frequency.linearRampToValueAtTime(360, t + .11);
+    g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(.012, t + .015); g2.gain.exponentialRampToValueAtTime(.0001, t + .12);
+    o2.connect(bp); bp.connect(g2); g2.connect(bus); o2.start(t); o2.stop(t + .14);
+  }
+}
 function soundTick() {
-  if (!soundOn || !AC || lofi() || document.hidden) return;
+  if (!soundOn || !AC || lofi() || document.hidden) { SFX.length = 0; return; }
+  while (SFX.length) if (SFX.shift() === 'splash') splash();
+  if (ducksOn && Math.random() < .012) quack();
   const day = 1 - ENV.lamp, night = ENV.stars, quiet = RAIN ? .45 : 1, winter = SEASON === SEASONS.winter;
   if (RAIN && Math.random() < .35) drop(.04 + Math.random() * .05);
   if (day > .3 && !winter && Math.random() < .03 * day * quiet) bird(.02 * day);
@@ -1314,6 +1445,7 @@ document.getElementById('skip')?.addEventListener('click', e => { e.preventDefau
 
 // ---------- loop ----------
 let last = 0, t0 = performance.now(), envT = performance.now();
+const AT = +new URLSearchParams(location.search).get('at') || 0;   // test only: start the scene clock at this second
 // the visitor's local time and the part of the day the light shows
 const timeChip = document.getElementById('local-time');
 let chipT = 0;
@@ -1328,7 +1460,7 @@ function frame(now) {
   requestAnimationFrame(frame);
   if (lofi() || document.hidden || now - last < (vw < 760 ? 50 : 30)) return;   // about 20 fps on phones, 33 on larger screens
   const rawDt = (now - last) / 1000, dt = Math.min(.1, rawDt); last = now;
-  const t = reduce ? 4 : (now - t0) / 1000;
+  const t = reduce ? 4 : (now - t0) / 1000 + AT;
   if (!FIXED && now - envT > 30000) { envT = now; updateEnv(); }
   if (reduce || !PARALLAX) { PX = PY = 0; }
   else {
