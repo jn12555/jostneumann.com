@@ -1020,8 +1020,9 @@ for (const c of [SHB, SHF, SHL, SHM, LITB, LITF]) { c.width = VW; c.height = VH;
 const sb = SHB.getContext('2d'), sf = SHF.getContext('2d'), sl = SHL.getContext('2d'), sm = SHM.getContext('2d');
 let ART = [24, 90];                                // centre of the print on the left wall
 const ART_Q = QS.get('art');
-const ART_KIND = ['bulb', 'hiroshige'].includes(ART_Q) ? ART_Q : ART_Q === 'topo' && window.TOPO ? 'topo' : window.DOTS ? 'dots' : window.TOPO ? 'topo' : 'hiroshige';
-const LIVE = { dots: window.DOTS, topo: window.TOPO }[ART_KIND], LIVE_FPS = ART_KIND === 'dots' ? 20 : 8;   // the live print and its steps per second
+const ART_KIND = ['bulb', 'hiroshige'].includes(ART_Q) ? ART_Q : ART_Q === 'topo' && window.TOPO ? 'topo' : ART_Q === 'dots' && window.DOTS ? 'dots'
+  : window.LINEART ? 'line' : window.DOTS ? 'dots' : window.TOPO ? 'topo' : 'hiroshige';   // default: the one-line print (lineart.js)
+const LIVE = { line: window.LINEART, dots: window.DOTS, topo: window.TOPO }[ART_KIND], LIVE_FPS = ART_KIND === 'topo' ? 8 : 20;   // the live print and its steps per second
 let ARTGEO = null;                                 // the print's wall mapping, set when the shell is drawn
 // the live print (dots.js by default, topo.js with ?art=topo): drawn into its own small canvas, stretched column by column onto the wall in perspective,
 // lit like the shell and cached until its next step
@@ -1078,9 +1079,9 @@ function drawShellBack(c) {
   const ry = OY + 216, rb = 262;
   poly(c, [[OX + 88, ry], [OX + 296, ry], [toY(OX + 296, ry, rb), rb], [toY(OX + 88, ry, rb), rb]], '#45413e');
   r(c, toY(OX + 88, ry, rb), rb, toY(OX + 296, ry, rb) - toY(OX + 88, ry, rb), 1, '#33302e');
-  // left wall: a framed print, drawn live over the paper by drawArtLive(): by default dots that move between data shapes
-  // (dots.js), with ?art=topo an animated topographic map (topo.js), both made as OpenFilm pages; ?art=hiroshige and
-  // ?art=bulb show the earlier static prints.
+  // left wall: a framed print, drawn live over the paper by drawArtLive(): by default a single ink line that draws and redraws
+  // five subjects (lineart.js); ?art=dots shows dots moving between data shapes (dots.js), ?art=topo an animated topographic
+  // map (topo.js), and ?art=hiroshige and ?art=bulb the earlier static prints.
   const yL = (x, f) => { const t = toX(OX, OY, x), b = toX(OX, OY + 194, x); return t + (b - t) * f; };
   const AX0 = 7, AX1 = 43, F0 = .14, F1 = .66, AH = 100;                      // the art's frame on the wall, local height in pixels
   const at = (px, py) => [AX0 + px, yL(AX0 + px, F0 + py / AH * (F1 - F0))];   // local drawing coordinates -> wall
