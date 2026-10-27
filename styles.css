@@ -113,6 +113,7 @@ html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, htm
 .lab .body { padding: 1rem 1.1rem 1.1rem; }
 .lab .body p { color: var(--muted); margin: .45rem 0 .7rem; font-size: .95rem; }
 .lab .more { font-family: "VT323", ui-monospace, monospace; font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
+.lab .more a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .panel-section .lab { grid-template-columns: 1fr; }
 .article { padding-top: calc(var(--head) + 2.5rem); padding-bottom: 4rem; max-width: 720px; }
 .article h1 { font-size: clamp(2rem, 5vw, 2.8rem); text-transform: none; letter-spacing: 0; margin: .2rem 0 .4rem; }
