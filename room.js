@@ -7,7 +7,7 @@
 // the shelf (Experience), the notebook (Writing) and the phone (Contact).
 (() => {
 'use strict';
-const W = 432, H = 216, TAU = Math.PI * 2;   // the back wall: glass from the left wall to the right edge of the picture
+const W = 384, H = 216, TAU = Math.PI * 2;   // the back wall: glass between two side walls, centred in the picture (x 192 = 240 on screen)
 const VW = 480, VH = 270, OX = 48, OY = 20;   // displayed room (perspective shell) and where the back wall sits in it
 const html = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -138,8 +138,8 @@ function text(c, s, x, y, col) {
 // ---------- hotspots ----------
 const SPOTS = [
   { id: 'about', label: 'About', n: '01', x: 134, y: 90, w: 116, h: 60, line: '>ABOUT' },
-  { id: 'experience', label: 'Experience', n: '02', x: 300, y: 128, w: 63, h: 21, line: '>EXPERIENCE' },
-  { id: 'resources', label: 'Resources', n: '04', x: 366, y: 122, w: 23, h: 27, line: '>RESOURCES' },
+  { id: 'experience', label: 'Experience', n: '02', x: 288, y: 128, w: 63, h: 21, line: '>EXPERIENCE' },
+  { id: 'resources', label: 'Resources', n: '04', x: 354, y: 122, w: 23, h: 27, line: '>RESOURCES' },
   { id: 'contact', label: 'Contact', n: '05', x: 252, y: 121, w: 20, h: 29, line: '>CONTACT' },
   { id: 'writing', label: 'Writing', n: '03', x: 68, y: 144, w: 46, h: 13, line: '>WRITING' }
 ];
@@ -154,7 +154,7 @@ const MON = { x: 136, w: 112, cy: 114, h0: 38, k: .14 };   // centred in the pic
 // positions the code layers use; the painted still (STILL_GEO further down) replaces them with its own
 const GEO = {
   clip: [0, 0, W, 192], outDY: 0,                         // glass opening and vertical shift of the view
-  panesX: [[3, 106], [110, 214], [218, 322], [326, 429]], glassBottom: 146, sill: 146, desk: [147, 155],
+  panesX: [[3, 126], [130, 254], [258, 381]], glassBottom: 146, sill: 146, desk: [147, 155],
   lamp: { bulb: [263, 103, 10], glow: [268, 105], light: [268, 108], cone: [[262, 103], [274, 103], [296, 150], [238, 150]], pool: [270, 150] },
   kbd: [192, 152], phone: [257, 126, 9, 15], mug: [120, 136],
   clock: { x: 330, y: 22, h: 4.5, m: 7, s: 7.5, cover: 0, face: '#ece6da' }, shadows: true
@@ -164,7 +164,7 @@ const monCol = i => { const u = (i + .5) / MON.w * 2 - 1, h = MON.h0 * (1 + MON.
 // ---------- glass wall and the view: a full-width forest river panorama (colours from ENV and SEASON) ----------
 // The back wall is glass from the ceiling to the floor (y 0 to 192); the view behind it is drawn here in layers.
 const WIN = { x: 0, y: 0, w: W, h: 192 };
-const PANES = [[3, 3, 103, 186], [110, 3, 104, 186], [218, 3, 104, 186], [326, 3, 103, 186]];   // glass panels between the mullions
+const PANES = [[3, 3, 123, 186], [130, 3, 124, 186], [258, 3, 123, 186]];   // three equal glass panels; the screen sits in the middle one
 const SKY = 100, FAR = 102, NEAR = 106, RIV0 = 106, RIV1 = 142;                      // horizon, far bank, river
 const rnd = mulberry32(11);
 const ridge = (y0, amp, step, seed) => { const q = mulberry32(seed), pts = [[-10, 200]]; for (let x = -10; x <= W + 10; x += step) pts.push([x, y0 - q() * amp]); pts.push([W + 10, 200]); return pts; };
@@ -473,7 +473,7 @@ function vegLayers(E, S, snowC) {
 // Each moment repeats on its own cycle; place, direction and size change every cycle (seeded), so the view never loops visibly.
 const moment = (t, period, seed) => { const k = Math.floor(t / period); return { k, s: t - k * period, r: i => hash(k * 7919 + seed * 104729 + i * 31) }; };
 // stretches of bank and river that no near-bank tree or desk object hides, so a moment is actually seen
-const DEER_SPANS = [[24, 124], [284, 334], [352, 390]], FISH_SPANS = [[62, 110], [282, 300], [352, 392]];
+const DEER_SPANS = [[30, 124], [284, 334], [352, 376]], FISH_SPANS = [[62, 110], [282, 300], [352, 376]];
 const spot = (u, spans) => { let v = u * spans.reduce((a, [x0, x1]) => a + x1 - x0, 0); for (const [x0, x1] of spans) { if (v < x1 - x0) return x0 + v; v -= x1 - x0; } return spans[0][0]; };
 const SFX = []; let fishK = -1, ducksOn = false;   // sounds for the soundscape to play (a splash, the ducks)
 function flap(c, x, y, up, col, w = 1) { r(c, x - w, y - up, w, 1, col); r(c, x, y, 1, 1, col); r(c, x + 1, y - up, w, 1, col); }
@@ -701,7 +701,7 @@ function drawRoom(c) {
   // floor-to-ceiling glass: everything above the floor stays transparent except the frame
   const frame = '#1c1c20', edge = '#3a3a42';
   r(c, 0, 0, W, 2, frame); r(c, 0, 2, W, 1, edge);
-  for (const x of [0, 107, 215, 323, 430]) { r(c, x, 0, 2, 192, frame); r(c, x + 1, 0, 1, 192, edge); }
+  for (const x of [0, 127, 255, 382]) { r(c, x, 0, 2, 192, frame); r(c, x + 1, 0, 1, 192, edge); }
   r(c, 0, 190, W, 2, frame);
 }
 
@@ -717,7 +717,7 @@ function drawDesk(c) {
   c.fillStyle = under; c.fillRect(0, 161, W, 43);
   // slim black steel frame (no drawers)
   r(c, 16, 159, 352, 2, '#2a2a2e');
-  for (const lx2 of [16, 412]) { r(c, lx2, 159, 3, 54, '#2a2a2e'); r(c, lx2, 159, 1, 54, '#4a4a52'); r(c, lx2 - 3, 213, 9, 1, '#18181c'); }
+  for (const lx2 of [16, 364]) { r(c, lx2, 159, 3, 54, '#2a2a2e'); r(c, lx2, 159, 1, 54, '#4a4a52'); r(c, lx2 - 3, 213, 9, 1, '#18181c'); }
   // ---------- desk top: light oak, thin front edge ----------
   poly(c, [[6, 146], [W, 146], [W, 156], [0, 156]], '#bf9468');
   const gr = mulberry32(21);
@@ -725,7 +725,7 @@ function drawDesk(c) {
   r(c, 0, 146, W, 1, '#d8ae80');
   r(c, 0, 156, W, 3, '#a47a52'); r(c, 0, 156, W, 1, '#e0b88a'); r(c, 0, 158, W, 1, '#6a4a30');
   // shadows on the desk
-  for (const [x, w] of [[36, 20], [70, 42], [114, 14], [134, 116], [254, 18], [278, 14], [300, 64], [367, 20], [398, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
+  for (const [x, w] of [[8, 22], [36, 20], [70, 42], [114, 14], [134, 116], [254, 18], [278, 14], [288, 64], [355, 20]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
   // a glass lab flask with teal liquid and a cork, at the left end of the desk (it opens the Lab)
   r(c, 53, 139, 3, 10, 'rgba(20,12,8,.2)');                                          // its shadow
   poly(c, [[43.5, 131], [48.5, 131], [48.5, 139], [55, 148], [37, 148], [43.5, 139]], '#a9c4c9');   // the glass
@@ -788,6 +788,7 @@ function drawDesk(c) {
   r(c, 316, 124, 11, 19, '#141518'); r(c, 316, 124, 11, 1, '#34363c'); r(c, 317, 126, 9, 15, '#0e1014');
   r(c, 321, 125, 1, 1, '#2a2c30');
   c.restore();
+  c.save(); c.translate(-12, 0);                                                    // books, stack and folder: the right end of the desk
   // a few books on the desk, held by a black bookend, and a small stack with a stone (they open Experience)
   for (const [x, w, h, col] of [[304, 3, 15, '#2f3a4e'], [307.5, 4, 17, '#9c4a38'], [312, 3, 14, '#ddd3c0'], [315.5, 4, 16, '#3d5243'], [320, 3, 13, '#b98a3e'], [323.5, 4, 15, '#6e2e38']]) {
     r(c, x + w, 150 - h, 2, h - 2, 'rgba(20,12,8,.22)');                                   // shadow beside the spine
@@ -811,7 +812,8 @@ function drawDesk(c) {
   poly(c, [[367, 141], [370, 138], [386, 138], [386, 139], [370.4, 139], [368, 141.6]], '#5a5a62');
   r(c, 367, 141, 19, 1, '#4a4a52'); r(c, 385, 139, 1, 9, '#26262a');
   r(c, 371, 143, 9, 3, '#e8e2d6'); r(c, 372, 144, 6, 1, '#8a8478');                 // a paper label on the front
-  c.save(); c.translate(42, 0);                                                     // plant: at the new right end of the desk
+  c.restore();
+  c.save(); c.translate(-350, 0);                                                   // plant: at the left end of the desk, balancing the books on the right
   // plant in a white ceramic pot
   const LEAF = [[364, 118, 4, 11, -.5, '#4a7a46'], [370, 116, 4, 12, .4, '#3a6438'], [360, 124, 3, 9, -1.1, '#3a6438'], [374, 123, 3, 9, 1.0, '#4a7a46'], [367, 110, 3, 10, .05, '#5a8a50']];
   for (const [x, y, a, b, rot, col] of LEAF) ell(c, x, y, a, b, col, rot);
@@ -1088,8 +1090,8 @@ function drawShellBack(c) {
   poly(c, [[0, -6], [VW, -6], [OX + W, OY], [OX, OY]], '#2e2c2a');
   for (let x = OX; x <= OX + W; x += 12) strokePath(c, [[x, OY], [toY(x, OY, -6), -6]], '#373431');
   r(c, OX, OY - 2, W, 2, '#b8ae9c');
-  // the smooth plaster left wall with a soft shadow into the corner and a thin skirting
-  for (const side of [-1]) {                                                       // only the left wall; on the right the glass runs to the edge
+  // smooth plaster side walls with a soft shadow into the corners and a thin skirting
+  for (const side of [-1, 1]) {                                                    // both side walls, so the glass is centred
     const x0 = side < 0 ? OX : OX + W, xe = side < 0 ? 0 : VW;
     poly(c, [[xe, toX(x0, OY, xe)], [x0, OY], [x0, OY + 196], [xe, toX(x0, OY + 196, xe)]], '#3a3735');
     for (let k = 0; k < 6; k++) { const xx = x0 - side * k; strokePath(c, [[xx, toX(x0, OY, xx)], [xx, toX(x0, OY + 196, xx)]], `rgba(0,0,0,${.22 - k * .033})`); }
