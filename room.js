@@ -941,6 +941,13 @@ function drawDesktop(g, t, hover) {
   // menu bar with a clock
   g.fillStyle = 'rgba(12,14,20,.6)'; g.fillRect(0, 0, SW, 2);
   r(g, 2, 0, 1, 1, '#e8ecf4'); r(g, SW - 15, 0, 12, 1, '#e8ecf4');
+  // with Experience or Resources open, a window with a pixel copy of the panel's dot chart (xp-dots.js)
+  if (window.XPDOTS && (openId === 'experience' || openId === 'resources') && XPDOTS.has(openId)) {
+    const x0 = 4, y0 = 2, w = SW - 8, h = SH - 6;
+    r(g, x0 + 1, y0 + 1, w, h, 'rgba(0,0,0,.35)'); r(g, x0, y0, w, h, '#141a22'); r(g, x0, y0, w, 2, '#232c38');
+    r(g, x0 + 2, y0, 1, 1, '#ff5f57'); r(g, x0 + 4, y0, 1, 1, '#febc2e'); r(g, x0 + 6, y0, 1, 1, '#28c840');
+    XPDOTS.drawScreen(g, openId, x0 + 3, y0 + 3, w - 6, h - 5, t);
+  } else {
   // profile window
   r(g, wx + 1, wy + 1, 50, 21, 'rgba(0,0,0,.35)');
   r(g, wx, wy, 50, 21, '#141a22'); r(g, wx, wy, 50, 2, '#232c38');
@@ -959,6 +966,7 @@ function drawDesktop(g, t, hover) {
   r(g, cx, wy, 22, 11, '#141a22'); r(g, cx, wy, 22, 2, '#232c38');
   const hr = hourNow(), hh = String(Math.floor(hr)).padStart(2, '0'), mm = String(Math.floor((hr * 60) % 60)).padStart(2, '0');
   text(g, hh + (reduce || Math.floor(t * 2) % 2 === 0 ? ':' : ' ') + mm, cx + 2, wy + 4, '#e8ecf4');
+  }
   // dock
   r(g, dx, SH - 4, 32, 4, 'rgba(14,16,24,.65)');
   ['#5ac8fa', '#ffcc4a', '#7ff5d2', '#ff7a5a', '#b28af0', '#e8ecf4'].forEach((col, i) => r(g, dx + 2 + i * 5, SH - 3, 3, 2, col));

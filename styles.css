@@ -232,13 +232,15 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .when { font-family: "VT323", ui-monospace, monospace; font-size: 1.2rem; color: var(--screen); margin: 0; }
 .org { color: var(--muted); font-size: .95rem; margin: .25rem 0 .5rem; }
 .timeline ul { margin: 0; padding-left: 1.1rem; }
-/* Experience in data dots (xp-dots.js) */
+/* data dots for Experience and Resources (xp-dots.js) */
 .xp-viz { margin: 0 0 1.4rem; padding: .9rem 1rem .8rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
 .xp-bar { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; margin-bottom: .7rem; }
 .xp-kicker { margin: 0; font-family: "VT323", ui-monospace, monospace; font-size: 1.15rem; letter-spacing: .08em; text-transform: uppercase; color: var(--screen); }
-.xp-views { display: flex; gap: .35rem; }
+.xp-views { display: flex; flex-wrap: wrap; gap: .35rem; }
 .xp-views .chip { font-size: 1rem; padding: .32rem .65rem .28rem; }
 .xp-views .chip[aria-pressed="true"] { background: var(--paper); color: #1a1410; border-color: var(--paper); }
+.xp-views .chip i { display: inline-block; width: .5rem; height: .5rem; margin-right: .4rem; background: var(--c); vertical-align: .05rem; }
+.xp-hide { display: none !important; }
 .xp-stage { position: relative; }
 .xp-stage canvas { display: block; width: 100%; touch-action: pan-y; }
 .xp-tip {
@@ -250,9 +252,9 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .xp-tip b { display: block; color: var(--text); }
 .xp-tip span { color: var(--muted); }
 .xp-viz figcaption { margin-top: .5rem; color: var(--muted); font-size: .8rem; line-height: 1.45; }
-.timeline > li { transition: background-color .25s, box-shadow .25s; }
-.timeline > li.xp-on { background: rgba(127, 245, 210, .05); box-shadow: inset 2px 0 0 var(--screen); }
-.timeline > li.xp-flash { animation: xpFlash 1.2s ease-out; }
+.timeline > li, .plain > li { transition: background-color .25s, box-shadow .25s; }
+.timeline > li.xp-on, .plain > li.xp-on { background: rgba(127, 245, 210, .05); box-shadow: inset 2px 0 0 var(--screen); }
+.timeline > li.xp-flash, .plain > li.xp-flash { animation: xpFlash 1.2s ease-out; }
 @keyframes xpFlash { 0% { background: rgba(255, 231, 168, .22); } 100% { background: transparent; } }
 
 .two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2.5rem; }
@@ -338,6 +340,6 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 @media (max-width: 1140px) { #close .long { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .panel, .intro, .tip, .touch-menu { transition: none; }
-  .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev, .timeline > li.xp-flash { animation: none; }
-  .xp-tip, .timeline > li { transition: none; }
+  .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev, .timeline > li.xp-flash, .plain > li.xp-flash { animation: none; }
+  .xp-tip, .timeline > li, .plain > li { transition: none; }
 }
