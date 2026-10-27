@@ -1279,6 +1279,7 @@ function fill(id) {
     c.classList.remove('section'); c.classList.add('panel-section');
     body.append(c);
   }
+  if (window.XPDOTS) XPDOTS.mount(body);   // the Experience dot chart (xp-dots.js) needs its own copy in the panel
   body.scrollTop = 0;
 }
 function openPanel(id) {
