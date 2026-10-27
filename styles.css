@@ -252,10 +252,43 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .xp-tip b { display: block; color: var(--text); }
 .xp-tip span { color: var(--muted); }
 .xp-viz figcaption { margin-top: .5rem; color: var(--muted); font-size: .8rem; line-height: 1.45; }
-.timeline > li, .plain > li { transition: background-color .25s, box-shadow .25s; }
-.timeline > li.xp-on, .plain > li.xp-on { background: rgba(127, 245, 210, .05); box-shadow: inset 2px 0 0 var(--screen); }
-.timeline > li.xp-flash, .plain > li.xp-flash { animation: xpFlash 1.2s ease-out; }
-@keyframes xpFlash { 0% { background: rgba(255, 231, 168, .22); } 100% { background: transparent; } }
+/* linked highlight: an accent bar that grows down the left edge and a soft wash, both in the item's own colour (--hl, set by xp-dots.js) */
+.timeline > li, .plain > li { position: relative; isolation: isolate; }
+.timeline > li::before, .plain > li::before {
+  content: ""; position: absolute; left: -14px; top: .95rem; bottom: .95rem; width: 3px; border-radius: 2px;
+  background: var(--hl, var(--screen)); box-shadow: 0 0 10px var(--hl, var(--screen));
+  transform: scaleY(0); transform-origin: top; transition: transform .35s cubic-bezier(.2, .7, .2, 1);
+}
+.plain > li::before { top: .1rem; bottom: .1rem; }
+.timeline > li::after, .plain > li::after {
+  content: ""; position: absolute; z-index: -1; top: .45rem; bottom: .45rem; left: -14px; right: -10px; border-radius: 8px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hl, var(--screen)) 13%, transparent), transparent 75%);
+  opacity: 0; transition: opacity .3s;
+}
+.plain > li::after { top: -.35rem; bottom: -.35rem; }
+.timeline > li.xp-on::before, .plain > li.xp-on::before { transform: scaleY(1); }
+.timeline > li.xp-on::after, .plain > li.xp-on::after { opacity: 1; }
+.timeline > li .when, .plain > li .kw, .timeline > li h3, .plain > li h3 { transition: color .25s; }
+.timeline > li.xp-on .when, .plain > li.xp-on .kw { color: var(--hl, var(--screen)); }
+.timeline > li.xp-on h3 { color: #fff; }
+.timeline > li.xp-flash::after, .plain > li.xp-flash::after { animation: xpFlash 1.4s ease-out; }
+@keyframes xpFlash { 0% { opacity: 1; filter: brightness(2.2); } 100% { opacity: 0; filter: none; } }
+/* About: phrases linked to the dot tiles, with a highlighter sweep */
+.xp-mark {
+  color: inherit; padding: 0 .1em; border-radius: 3px; cursor: default;
+  background: linear-gradient(color-mix(in srgb, var(--hl) 28%, transparent), color-mix(in srgb, var(--hl) 28%, transparent)) no-repeat 0 100% / 0% 100%;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--hl) 55%, transparent);
+  transition: background-size .45s cubic-bezier(.2, .7, .2, 1), color .25s;
+}
+.xp-mark.xp-on { background-size: 100% 100%; color: #fff; }
+.xp-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .7rem; }
+.xp-tile { position: relative; padding: .7rem .8rem .75rem; border: 1px solid var(--line); border-radius: 6px; background: rgba(18, 15, 22, .45); transition: border-color .25s, box-shadow .25s; }
+.xp-tile.xp-on { border-color: var(--hl); box-shadow: 0 0 0 1px color-mix(in srgb, var(--hl) 40%, transparent), 0 0 18px color-mix(in srgb, var(--hl) 18%, transparent); }
+.xp-num { margin: 0; font-family: "VT323", ui-monospace, monospace; font-size: 1.9rem; line-height: 1; color: var(--hl); letter-spacing: .02em; }
+.xp-lab { margin: .2rem 0 .55rem; color: var(--text); font-size: .86rem; line-height: 1.35; }
+.xp-unit { margin: .45rem 0 0; color: var(--muted); font-size: .74rem; }
+.xp-tile canvas { display: block; width: 100%; }
+.panel-section .xp-tiles { grid-template-columns: 1fr; }
 
 .two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2.5rem; }
 .plain { list-style: none; padding: 0; margin: 0; }
@@ -340,6 +373,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 @media (max-width: 1140px) { #close .long { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .panel, .intro, .tip, .touch-menu { transition: none; }
-  .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev, .timeline > li.xp-flash, .plain > li.xp-flash { animation: none; }
-  .xp-tip, .timeline > li, .plain > li { transition: none; }
+  .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev { animation: none; }
+  .xp-tip, .xp-mark, .xp-tile, .timeline > li::before, .timeline > li::after, .plain > li::before, .plain > li::after { transition: none; }
+  .timeline > li.xp-flash::after, .plain > li.xp-flash::after { animation: none; }
 }

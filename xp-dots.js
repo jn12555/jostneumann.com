@@ -1,4 +1,4 @@
-// Data dots for the Experience and Resources sections (Personal Website). A classic script: it sets window.XPDOTS.
+// Data dots for the About, Experience and Resources sections (Personal Website). A classic script: it sets window.XPDOTS.
 // mount(root) looks inside root for the experience timeline and the resources lists and puts a small dot chart above
 // each. Experience: one dot per month of work, coloured by sector, by year (a calendar grid, with the advisory roles,
 // degrees and certifications of each year under it) or by sector (rows with the years per sector). Resources: one dot
@@ -115,7 +115,8 @@
     for (const r of roles) for (let n = r.start; n <= r.end; n++) owner.set(n, r);
     const dots = [...owner.keys()].sort((a, b) => a - b).map((n, i) => ({ n, i, role: owner.get(n), x: 0, y: 0, sx: 0, sy: 0, tx: 0, ty: 0, t0: 0, a: 0 }));
     const sectors = SECTORS.map(s => ({ ...s, months: dots.filter(d => d.role.sector === s).length })).filter(s => s.months).sort((a, b) => b.months - a.months);
-    roles.forEach(r => { r.sector = sectors.find(s => s.id === r.sector.id) || r.sector; });   // point the roles at the counted copies
+    roles.forEach(r => { r.sector = sectors.find(s => s.id === r.sector.id) || r.sector; r.li.style.setProperty('--hl', r.sector.color); });   // point the roles at the counted copies; --hl colours the linked highlight
+    extras.forEach(e => e.li.style.setProperty('--hl', e.kind === 'adv' ? ADV : e.kind === 'edu' ? EDU : CERT));
     const wy0 = Math.floor(first / 12), y1 = Math.floor(now / 12), y0 = Math.min(wy0, ...extras.map(e => e.from));
     const advIn = y => extras.filter(e => e.kind === 'adv' && e.from <= y && e.to >= y), eduIn = y => extras.filter(e => e.kind !== 'adv' && e.from === y);
     const maxAdv = Math.max(0, ...Array.from({ length: y1 - y0 + 1 }, (_, k) => advIn(y0 + k).length));
@@ -291,6 +292,7 @@
     });
     if (!items.length) return;
     items.sort((a, b) => a.when - b.when).forEach((it, i) => Object.assign(it, { i, x: 0, y: 0, sx: 0, sy: 0, tx: 0, ty: 0, t0: 0, a: 0, ta: 1 }));
+    items.forEach(it => it.li.style.setProperty('--hl', it.g.color));
     const ry0 = Math.min(...items.map(i => i.year)), ry1 = Math.max(...items.map(i => i.year));
     const groups = GROUPS.filter(g => items.some(i => i.g === g));
 
@@ -395,6 +397,84 @@
     kick();
   }
 
+  // ---------- About ----------
+  // the figures in the About text as dot tiles; each tile is linked to its phrase in the text, which gets a highlighter sweep
+  function wrapPhrase(prose, phrase, key) {
+    let mk = prose.querySelector(`mark[data-key="${key}"]`);   // a clone of the page section brings the mark along
+    if (mk) return mk;
+    const walk = document.createTreeWalker(prose, NodeFilter.SHOW_TEXT);
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      const i = n.nodeValue.indexOf(phrase); if (i < 0) continue;
+      const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + phrase.length);
+      mk = document.createElement('mark'); mk.className = 'xp-mark'; mk.dataset.key = key; r.surroundContents(mk);
+      return mk;
+    }
+    return null;
+  }
+  function mountAbout(root) {
+    const prose = [...root.querySelectorAll('.prose')].find(q => { const h = q.closest('section') && q.closest('section').querySelector('h2'); return h && /^\s*about\s*$/i.test(h.textContent); });
+    if (!prose) return;
+    const sec = prose.closest('section'), old = sec.querySelector('.xp-viz'); if (old) old.remove();
+    const text = prose.textContent, figs = [];
+    let m = document.body.textContent.match(/(\d+) Best Tourism Villages by UN Tourism \(BTVs\) in (\d+) countries/);   // stated in the Lab section
+    const btv = 'Best Tourism Villages by UN Tourism (BTV) Network';
+    if (m && text.includes(btv)) figs.push({ key: 'btv', n: +m[1], num: k => String(k), lab: `villages in the BTV Network, in ${m[2]} countries`, unit: '1 dot = 1 village', color: '#5fb4ef', phrase: btv });
+    m = text.match(/approximately EUR (\d+) million of philanthropic capital/);
+    if (m) figs.push({ key: 'inv', n: +m[1], num: k => `EUR ${k} million`, lab: 'philanthropic capital invested in destination projects, approximately', unit: '1 dot = EUR 1 million', color: '#ffb35a', phrase: m[0] });
+    m = text.match(/more than EUR (\d+) million from institutional donors/);
+    if (m) figs.push({ key: 'mob', n: +m[1], num: k => `EUR ${k} million`, lab: 'mobilized from institutional donors, more than', unit: '1 dot = EUR 1 million', color: '#ffe7a8', phrase: m[0] });
+    if (!figs.length) return;
+
+    const fig = document.createElement('figure'); fig.className = 'xp-viz'; fig.dataset.kind = 'about';
+    fig.innerHTML = '<div class="xp-bar"><p class="xp-kicker">About in data dots</p></div><div class="xp-tiles"></div>' +
+      '<figcaption>Each dot stands for one unit, as noted on the tile. Hover over or tap a tile or a highlighted phrase in the text to link the two.</figcaption>';
+    sec.insertBefore(fig, prose);
+    const box = fig.querySelector('.xp-tiles');
+    let hover = null;
+    const setHover = f => { hover = f; figs.forEach(q => { q.tile.classList.toggle('xp-on', q === f); if (q.mark) q.mark.classList.toggle('xp-on', q === f); q.kick(); }); };
+    for (const f of figs) {
+      const tile = document.createElement('div'); tile.className = 'xp-tile'; tile.style.setProperty('--hl', f.color);
+      tile.innerHTML = `<p class="xp-num">${f.num(f.n)}</p><p class="xp-lab">${esc(f.lab)}</p><canvas role="img"></canvas><p class="xp-unit">${f.unit}</p>`;
+      box.append(tile);
+      const cv = tile.querySelector('canvas'), c = cv.getContext('2d'), num = tile.querySelector('.xp-num');
+      cv.setAttribute('aria-label', `${f.num(f.n)}: ${f.lab}; ${f.unit}.`);
+      f.tile = tile; f.mark = wrapPhrase(prose, f.phrase, f.key);
+      if (f.mark) f.mark.style.setProperty('--hl', f.color);
+      let W = 0, H = 0, P = 7, S = 5, per = 1, started = 0;
+      const layout = () => {
+        W = Math.max(160, Math.round(cv.clientWidth || tile.clientWidth - 26)); P = f.n > 100 ? 6 : 8; S = P - 2;
+        per = Math.max(1, Math.floor((W + P - S) / P)); H = Math.ceil(f.n / per) * P - (P - S); sizeCanvas(cv, c, W, H);
+      };
+      const tick = ts => {   // the dots fill in once the tile is on screen, the number counting with them; hovering sends a wave through them
+        const r = cv.getBoundingClientRect();
+        if (!started && r.width && r.bottom > 0 && r.top < innerHeight && r.left < innerWidth && r.right > 0) started = ts;
+        const span = reduce ? 0 : 1100, p = !started ? 0 : span ? Math.min(1, (ts - started) / span) : 1, shown = Math.round(f.n * ease(p)), t = ts / 1000;
+        num.textContent = f.num(shown);
+        c.clearRect(0, 0, W, H);
+        for (let k = 0; k < f.n; k++) {
+          const x = (k % per) * P, y = Math.floor(k / per) * P;
+          if (k >= shown) { c.globalAlpha = 1; c.fillStyle = GHOST; c.fillRect(x, y, S, S); continue; }
+          const wave = hover === f && !reduce ? Math.max(0, Math.sin(k * .35 - t * 7)) : 0, tw = !reduce && hover !== f && Math.sin(t * 1.2 + k * 2.399) > .995;
+          c.globalAlpha = hover && hover !== f ? .35 : 1;
+          c.fillStyle = tw || wave > .85 ? '#fff6dc' : f.color;
+          const g = wave > .6 ? 1 : 0;
+          c.fillRect(x - g * .5, y - g * .5, S + g, S + g);
+        }
+        c.globalAlpha = 1;
+        return !started || p < 1 || hover === f;
+      };
+      layout();
+      f.kick = loop(cv, tile, layout, tick);
+      tile.addEventListener('mouseenter', () => setHover(f)); tile.addEventListener('mouseleave', () => setHover(null));
+      tile.addEventListener('click', () => setHover(hover === f ? null : f));
+      if (f.mark) {
+        f.mark.addEventListener('mouseenter', () => setHover(f)); f.mark.addEventListener('mouseleave', () => setHover(null));
+        f.mark.addEventListener('click', () => { setHover(f); tile.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }); });
+      }
+      f.kick();
+    }
+  }
+
   // ---------- desk screen (room.js) ----------
   // a pixel copy of the open chart, drawn into the flat screen image before it is bent onto the curved monitor
   const SCREEN = {};
@@ -442,9 +522,9 @@
   }
   const has = kind => !!(STATE[kind] && STATE[kind].fig.isConnected && STATE[kind].fig.closest('.panel'));
 
-  function mount(root) { if (!root) return; mountExperience(root); mountResources(root); }
+  function mount(root) { if (!root) return; mountAbout(root); mountExperience(root); mountResources(root); }
   window.XPDOTS = { mount, drawScreen, has };
   // the text version (and the page without the scene) shows the sections themselves
-  const init = () => ['experience', 'resources'].forEach(id => { const s = document.getElementById(id); if (s) mount(s); });
+  const init = () => ['about', 'experience', 'resources'].forEach(id => { const s = document.getElementById(id); if (s) mount(s); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
