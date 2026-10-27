@@ -1221,7 +1221,7 @@ function layout() {
   vw = innerWidth; vh = innerHeight;
   portrait = vw / vh <= 1 || (vw <= 760 && vh > 520);   // phones held sideways (short screens) use the side panel
   // portrait: a band under the header, leaving room below for the name and the section buttons
-  s0 = portrait ? Math.max(.6, Math.min(vw / 320, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);   // phones: the print, the window, the screen and the phone fit side by side
+  s0 = portrait ? Math.max(.6, Math.min(vw / VW, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);   // phones: the whole room, as on a laptop
   document.documentElement.style.setProperty('--band-bottom', Math.round(HEAD + VH * s0) + 'px');
   stackPortrait();
   if (!openId) { goal.fx = VW / 2; goal.fy = portrait ? 128 : 132; }
@@ -1250,7 +1250,7 @@ function aim(id) {
   const nav = NAV_ONLY.find(q => q.id === id), s = SPOTS.find(q => q.id === (nav ? nav.at : id)), pb = panelBox();
   const aw = portrait ? vw : vw - pb.w, ah = portrait ? vh - pb.h - HEAD : vh - HEAD;
   goal.fx = OX + s.x + s.w / 2; goal.fy = OY + s.y + s.h / 2;
-  goal.z = clamp(Math.min(aw * .55 / (s.w * s0), ah * .55 / (s.h * s0)), 1, 1.8);   // frame the object with some of the room around it; never closer than 1.8x
+  goal.z = clamp(Math.min(aw * .55 / (s.w * s0), ah * .55 / (s.h * s0)), 1, portrait ? 2.7 : 1.8);   // frame the object with some of the room around it; phones start from the whole room, so they may come closer
   goal.p = 1;
 }
 function place() {
@@ -1495,7 +1495,6 @@ function frame(now) {
     PX += (tx - PX) * kp; PY += (ty - PY) * kp;
   }
   DDX = stillMode ? 0 : -Math.round(PX); DDY = stillMode ? 0 : -Math.round(PY * .6);
-  if (portrait && !openId) goal.fx = 0;                                      // phones: the view starts at the left wall, so the framed print is always in it
   const k = 1 - Math.exp(-Math.min(.4, rawDt) * 5.5);                         // the camera uses real time, so it arrives on time on slow devices too
   for (const key of ['fx', 'fy', 'z', 'p']) cur[key] += (goal[key] - cur[key]) * k;
   place();
