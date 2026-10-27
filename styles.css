@@ -252,7 +252,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .site-footer p { margin: 0; }
 
 /* ---------- phone / portrait ---------- */
-@media (max-width: 760px), (max-aspect-ratio: 1/1) {
+@media (max-width: 760px) and (min-height: 521px), (max-aspect-ratio: 1/1) {   /* phones held upright; held sideways they use the side panel below */
   html.js:not(.lofi) .top .sections { display: none; }
   html.js:not(.lofi) .top { background: linear-gradient(var(--bg) 55%, rgba(18, 15, 22, 0)); }   /* keeps the name legible over the zoomed scene */
   .intro { left: 16px; right: 16px; bottom: auto; top: calc(var(--band-bottom, 50vh) + 12px); max-width: none; padding: 14px 16px 12px; }
@@ -295,10 +295,25 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 
 /* phones held sideways: a short screen with a narrow panel */
 @media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  .brand { font-size: .82rem; }
+  .sections { gap: .1rem; }
+  .sections a { font-size: 1.15rem; padding: .25rem .35rem; }
+  .panel { width: min(500px, max(44vw, 360px)); }   /* wide enough for the section title and its buttons */
+  .panel-head { padding-left: 18px; padding-right: 18px; gap: .6rem; }
   .panel-kicker { white-space: nowrap; font-size: 1.25rem; }
   #close .long { display: none; }
   .scene-disclaimer { font-size: .66rem; }
 }
+/* very small phones (320 px wide): compact buttons so the menu, the note and the chips fit on one screen */
+@media (max-width: 340px) and (max-aspect-ratio: 1/1) {
+  .touch-menu a { font-size: 1.15rem; letter-spacing: 0; padding: .4rem .55rem .34rem; }
+  .scene-disclaimer { font-size: .66rem; }
+  .panel-head { gap: .5rem; padding-left: 14px; padding-right: 14px; }
+  .panel-kicker { font-size: 1.15rem; }
+  .chip.arrow { min-width: 2rem; }
+}
+/* narrower desktop windows: the short Back label leaves room for the section title */
+@media (max-width: 1140px) { #close .long { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .panel, .intro, .tip, .touch-menu { transition: none; }
   .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev { animation: none; }

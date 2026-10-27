@@ -1219,9 +1219,9 @@ let hover = null, openId = null;
 
 function layout() {
   vw = innerWidth; vh = innerHeight;
-  portrait = vw <= 760 || vw / vh <= 1;
+  portrait = vw / vh <= 1 || (vw <= 760 && vh > 520);   // phones held sideways (short screens) use the side panel
   // portrait: a band under the header, leaving room below for the name and the section buttons
-  s0 = portrait ? Math.max(.7, Math.min(vw / 320, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);   // phones: the print, the window, the screen and the phone fit side by side
+  s0 = portrait ? Math.max(.6, Math.min(vw / 320, (vh - HEAD - 380 - fitShrink) / VH)) : Math.max(vw / VW, vh / VH);   // phones: the print, the window, the screen and the phone fit side by side
   document.documentElement.style.setProperty('--band-bottom', Math.round(HEAD + VH * s0) + 'px');
   stackPortrait();
   if (!openId) { goal.fx = VW / 2; goal.fy = portrait ? 128 : 132; }
@@ -1239,13 +1239,13 @@ function stackPortrait() {
         const d = document.querySelector('.scene-disclaimer'); if (!d) return;
         const top = Math.round(d.getBoundingClientRect().bottom + 12), over = top + 44 - (vh - 10);
         html.style.setProperty('--dock-top', top + 'px');                                  // the chips follow the disclaimer
-        if (over > 2 && s0 > .71 && fitShrink < 600) { fitShrink += over; layout(); cur = { ...goal, p: cur.p }; }   // too tall: shrink the scene band until all fits
+        if (over > 2 && s0 > .61 && fitShrink < 600) { fitShrink += over; layout(); cur = { ...goal, p: cur.p }; }   // too tall: shrink the scene band until all fits
       });
     });
   });
 }
 if (document.fonts) document.fonts.ready.then(stackPortrait);
-function panelBox() { return portrait ? { w: vw, h: vh * .62 } : { w: Math.min(500, vw * .44), h: vh }; }
+function panelBox() { return portrait ? { w: vw, h: vh * .62 } : { w: Math.min(500, Math.max(vw * .44, vh <= 520 ? 360 : 0)), h: vh }; }   // matches .panel in styles.css
 function aim(id) {
   const nav = NAV_ONLY.find(q => q.id === id), s = SPOTS.find(q => q.id === (nav ? nav.at : id)), pb = panelBox();
   const aw = portrait ? vw : vw - pb.w, ah = portrait ? vh - pb.h - HEAD : vh - HEAD;
