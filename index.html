@@ -45,6 +45,7 @@
       <a href="#writing" data-go="writing">Writing</a>
       <a href="#resources" data-go="resources">Resources</a>
       <a href="#contact" data-go="contact">Contact</a>
+      <!-- LAB:START --><a href="#lab" data-go="lab">Lab</a><!-- LAB:END -->
     </nav>
   </header>
 
@@ -58,6 +59,7 @@
       <a href="#writing" data-go="writing"><b>03</b> Writing</a>
       <a href="#resources" data-go="resources"><b>04</b> Resources</a>
       <a href="#contact" data-go="contact"><b>05</b> Contact</a>
+      <!-- LAB:START --><a href="#lab" data-go="lab"><b>06</b> Lab</a><!-- LAB:END -->
     </nav>
     <p class="disclaimer scene-disclaimer">Personal page. The views expressed on this site are personal and do not necessarily reflect those of any current or former employer. <a href="impressum.html">Impressum</a> · <a href="privacy.html">Privacy</a></p>
   </div>
@@ -236,7 +238,6 @@
       <ul class="plain">
         <li><p class="kw">Presentation</p><h3><a href="https://www.comcec.org/wp-content/uploads/2025/10/Report-of-the-13th-Meeting-of-COMCEC-Private-Sector-Tourism-Forum.pdf" target="_blank" rel="noopener">Presentation on the Tourism for Rural Development Programme</a></h3><p class="org">13th Meeting of the OIC/COMCEC Private Sector Tourism Forum, "Tourism and Rural Development in OIC Countries" (virtual) · 8 October 2025 · Summarized in the meeting report (para. 10)</p></li>
         <li><p class="kw">Panel · Video</p><h3><a href="https://www.youtube.com/watch?v=aNb7rbNzItk" target="_blank" rel="noopener">Sustainable Rural Tourism: A Foundation for Biodiversity Preservation and Gender Equality</a></h3><p class="org">ITB Berlin Convention · March 2024 · Panellist, as Director Programmes, TUI Care Foundation, with speakers from GIZ, UN Tourism and academia</p></li>
-        <li><p class="kw">Panel · Video</p><h3><a href="https://www.youtube.com/watch?v=C6jabSAxh9M" target="_blank" rel="noopener">Tag der Industrie 2023: Digital and technology sector (in German)</a></h3><p class="org">Federation of German Industries (BDI) · June 2023 · Panellist, as Director Programmes, TUI Care Foundation, with speakers from the Federal Ministry for Economic Cooperation and Development (BMZ) and GIZ</p></li>
         <li><p class="kw">Conversation · Video</p><h3><a href="https://www.youtube.com/watch?v=9T5XU153Uj4" target="_blank" rel="noopener">Official launch of the 2021 Social Entrepreneurship Competition in Tourism</a></h3><p class="org">Social Entrepreneurship Competition in Tourism · 8 March 2021 · Conversation with the competition founder and a jury member, as TUI Care Foundation representative</p></li>
       </ul>
       <h2 class="sub">Media and coverage</h2>
@@ -249,6 +250,41 @@
       </ul>
     </section>
 
+    <!-- LAB:START (draft: tools/build.py leaves this out unless --with-lab) -->
+    <section id="lab" class="wrap section">
+      <h2>Lab</h2>
+      <p class="muted">Small tools and experiments built with Claude, an AI model by Anthropic. They are personal projects: the ideas, design decisions, testing and final checks are Jost Neumann's own.</p>
+      <ul class="lab">
+        <li>
+          <img src="assets/lab/explorer.jpg" alt="The opening screen of the BTV Digital Explorer: a dark map of dots, one per village, with the title An open data rural tourism explorer" loading="lazy" width="800" height="500">
+          <div class="body">
+            <p class="kw">Prototype · Open data</p>
+            <h3>BTV Digital Explorer</h3>
+            <p>An open data explorer of the 236 Best Tourism Villages by UN Tourism (BTVs) in 57 countries. It brings together open data frameworks maintained largely by international organizations: settlement type and population from the Global Human Settlement Layer, access to towns, airports and railway stations, international recognitions such as UNESCO sites and protected areas, and documented good practices graded by the strength of their evidence. Its maps are designed to follow United Nations cartographic conventions, and it is available in English, French, Spanish and Arabic.</p>
+            <span class="more">Internal prototype, not public · Built with Claude Code</span>
+          </div>
+        </li>
+        <li>
+          <img src="assets/lab/samer.jpg" alt="The Samer start page: the headline Meet Samer, your speaking companion, beside a live teleprompter demo with a sample speech" loading="lazy" width="800" height="506">
+          <div class="body">
+            <p class="kw">Tool · Web app</p>
+            <h3>Samer, a speaking companion</h3>
+            <p>Turns a Word or PDF speech into a teleprompter in the browser. Sections and key messages are found automatically and stay editable, cues for the speaker are not read aloud, the pace follows the time slot, and a speech can be sent to a phone by link or QR code. It detects Arabic and works offline. The name means a companion in evening conversation in Arabic.</p>
+            <span class="more">Private preview · Built with Claude Code</span>
+          </div>
+        </li>
+        <li>
+          <img src="assets/og-image.png" alt="This website's pixel-art room: a desk with a curved screen in front of a glass wall that looks out on a river and mountains" loading="lazy" width="1200" height="630">
+          <div class="body">
+            <p class="kw">Website · Pixel art</p>
+            <h3>This room</h3>
+            <p>The scene is drawn in code, pixel by pixel. Light and seasons follow the visitor's local time and date, wildlife and weather appear now and then, a framed print draws one-line homages to famous works, and a generated soundscape of rain and nature plays on request. No images, fonts or scripts are loaded from third parties.</p>
+            <span class="more">Built with Claude Code · October 2026</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+    <!-- LAB:END -->
 
     <section id="contact" class="wrap section">
       <h2>Contact</h2>
