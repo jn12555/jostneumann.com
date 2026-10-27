@@ -1,4 +1,4 @@
-// Data dots for the About, Experience and Resources sections (Personal Website). A classic script: it sets window.XPDOTS.
+// Data dots for the About, Areas of expertise, Experience and Resources sections (Personal Website). A classic script: it sets window.XPDOTS.
 // mount(root) looks inside root for the experience timeline and the resources lists and puts a small dot chart above
 // each. Experience: one dot per month of work, coloured by sector, by year (a calendar grid, with the advisory roles,
 // degrees and certifications of each year under it) or by sector (rows with the years per sector). Resources: one dot
@@ -416,10 +416,7 @@
     if (!prose) return;
     const sec = prose.closest('section'), old = sec.querySelector('.xp-viz'); if (old) old.remove();
     const text = prose.textContent, figs = [];
-    let m = document.body.textContent.match(/(\d+) Best Tourism Villages by UN Tourism \(BTVs\) in (\d+) countries/);   // stated in the Lab section
-    const btv = 'Best Tourism Villages by UN Tourism (BTV) Network';
-    if (m && text.includes(btv)) figs.push({ key: 'btv', n: +m[1], num: k => String(k), lab: `villages in the BTV Network, in ${m[2]} countries`, unit: '1 dot = 1 village', color: '#5fb4ef', phrase: btv });
-    m = text.match(/approximately EUR (\d+) million of philanthropic capital/);
+    let m = text.match(/approximately EUR (\d+) million of philanthropic capital/);
     if (m) figs.push({ key: 'inv', n: +m[1], num: k => `EUR ${k} million`, lab: 'philanthropic capital invested in destination projects, approximately', unit: '1 dot = EUR 1 million', color: '#ffb35a', phrase: m[0] });
     m = text.match(/more than EUR (\d+) million from institutional donors/);
     if (m) figs.push({ key: 'mob', n: +m[1], num: k => `EUR ${k} million`, lab: 'mobilized from institutional donors, more than', unit: '1 dot = EUR 1 million', color: '#ffe7a8', phrase: m[0] });
@@ -475,6 +472,51 @@
     }
   }
 
+  // ---------- Areas of expertise ----------
+  // each card gets a small dot icon that gathers into shape as the cards rise in; hovering a card sends a ripple through it
+  const ICONS = [   // 9 x 7 dots, matched against the card's keyword
+    { test: /tour/i, color: '#9ad57f', rows: ['......##.', '......##.', '..#......', '.###..#..', '#####.##.', '#########', '#########'] },
+    { test: /invest/i, color: '#ffb35a', rows: ['........#', '......#.#', '......#.#', '....#.#.#', '..#.#.#.#', '#.#.#.#.#', '#########'] },
+    { test: /develop/i, color: '#5fb4ef', rows: ['..#####..', '.#..#..#.', '#..###..#', '#########', '#..###..#', '.#..#..#.', '..#####..'] },
+    { test: /data/i, color: '#7ff5d2', rows: ['#.#.#.#.#', '.........', '#.#.#.###', '......#..', '#.#.###.#', '..#......', '###.#.#.#'] },
+  ];
+  function mountExpertise(root) {
+    const list = [...root.querySelectorAll('ul.cards')].find(u => { const h = u.closest('section') && u.closest('section').querySelector('h2'); return h && /expertise/i.test(h.textContent); });
+    if (!list) return;
+    const P = 4, S = 3, W = 9 * P - 1, H = 7 * P - 1;
+    [...list.children].forEach((li, idx) => {
+      const kw = li.querySelector('.kw'), icon = kw && ICONS.find(q => q.test.test(kw.textContent)); if (!icon) return;
+      const old = li.querySelector('canvas.xp-icon'); if (old) old.remove();   // a clone of the page section brings an empty copy
+      li.classList.add('xp-card'); li.classList.remove('xp-in'); li.style.setProperty('--hl', icon.color); li.style.setProperty('--d', idx * 120 + 'ms');
+      const cv = document.createElement('canvas'); cv.className = 'xp-icon'; cv.setAttribute('aria-hidden', 'true'); li.prepend(cv);
+      const c = cv.getContext('2d'); sizeCanvas(cv, c, W, H); cv.style.width = W + 'px';
+      const dots = [];
+      icon.rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '#') dots.push({ tx: x * P, ty: y * P, sx: Math.random() * (W - S), sy: Math.random() * (H - S), k: dots.length }); }));
+      let started = 0, hover = false;
+      const tick = ts => {
+        const r = cv.getBoundingClientRect();
+        if (!started && r.width && r.bottom > 0 && r.top < innerHeight && r.left < innerWidth && r.right > 0) { started = ts; li.classList.add('xp-in'); }
+        const t = ts / 1000, base = started ? ts - started - idx * 120 : -1;
+        let moving = !started;
+        c.clearRect(0, 0, W, H);
+        for (const d of dots) {
+          const p = reduce ? 1 : Math.min(1, Math.max(0, (base - d.k * 14) / 650)); if (p < 1) moving = true;
+          const e = ease(p), dist = Math.hypot(d.tx - W / 2, d.ty - H / 2);
+          const rip = hover && !reduce ? Math.sin(t * 9 - dist * .35) * 1.4 : 0, tw = !reduce && !hover && Math.sin(t * 1.1 + d.k * 2.399) > .993;
+          c.globalAlpha = started ? Math.min(1, .25 + p) : .25;
+          c.fillStyle = tw ? '#fff6dc' : icon.color;
+          c.fillRect(Math.round(d.sx + (d.tx - d.sx) * e), Math.round(d.sy + (d.ty - d.sy) * e + rip), S, S);
+        }
+        c.globalAlpha = 1;
+        return moving || hover;
+      };
+      const kick = loop(cv, li, () => {}, tick);
+      setTimeout(() => li.classList.add('xp-in'), 2500);   // never leave a card hidden, even where frames are held back
+      li.addEventListener('mouseenter', () => { hover = true; kick(); }); li.addEventListener('mouseleave', () => { hover = false; kick(); });
+      kick();
+    });
+  }
+
   // ---------- desk screen (room.js) ----------
   // a pixel copy of the open chart, drawn into the flat screen image before it is bent onto the curved monitor
   const SCREEN = {};
@@ -522,9 +564,9 @@
   }
   const has = kind => !!(STATE[kind] && STATE[kind].fig.isConnected && STATE[kind].fig.closest('.panel'));
 
-  function mount(root) { if (!root) return; mountAbout(root); mountExperience(root); mountResources(root); }
+  function mount(root) { if (!root) return; mountAbout(root); mountExpertise(root); mountExperience(root); mountResources(root); }
   window.XPDOTS = { mount, drawScreen, has };
   // the text version (and the page without the scene) shows the sections themselves
-  const init = () => ['about', 'experience', 'resources'].forEach(id => { const s = document.getElementById(id); if (s) mount(s); });
+  const init = () => ['about', 'expertise', 'experience', 'resources'].forEach(id => { const s = document.getElementById(id); if (s) mount(s); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

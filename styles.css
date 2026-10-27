@@ -225,6 +225,14 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .9rem; }
 .cards li { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem; }
 .cards p { color: var(--muted); margin: .45rem 0 0; font-size: .95rem; }
+/* expertise cards (xp-dots.js): a dot icon, a staggered rise and a hover accent in the card's colour */
+.cards li.xp-card { transition: border-color .3s, transform .3s, box-shadow .3s; }
+.cards li.xp-card .kw { color: var(--hl); }
+.cards li.xp-card:not(.xp-in) { opacity: 0; }
+.cards li.xp-card.xp-in { animation: xpRise .6s cubic-bezier(.2, .7, .2, 1) var(--d, 0ms) both; }
+@keyframes xpRise { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+.cards li.xp-card:hover { border-color: var(--hl); transform: translateY(-2px); box-shadow: 0 8px 22px color-mix(in srgb, var(--hl) 14%, transparent); }
+.xp-icon { float: right; margin: .1rem 0 .4rem .7rem; image-rendering: pixelated; }
 
 .timeline { list-style: none; padding: 0; margin: 0; }
 .timeline > li { display: grid; grid-template-columns: 150px 1fr; gap: 1.5rem; padding: 1.1rem 0; border-bottom: 1px dashed var(--line); }
@@ -374,6 +382,8 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .panel, .intro, .tip, .touch-menu { transition: none; }
   .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev { animation: none; }
+  .cards li.xp-card.xp-in { animation: none; }
+  .cards li.xp-card { transition: none; }
   .xp-tip, .xp-mark, .xp-tile, .timeline > li::before, .timeline > li::after, .plain > li::before, .plain > li::after { transition: none; }
   .timeline > li.xp-flash::after, .plain > li.xp-flash::after { animation: none; }
 }
