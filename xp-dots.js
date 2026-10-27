@@ -402,16 +402,16 @@
     const s = STATE[kind]; if (!s || !s.fig.isConnected) return false;
     const mem = SCREEN[kind] || (SCREEN[kind] = { pts: new Map() }), out = [];
     if (kind === 'experience') {
-      if (s.view === 'year') {   // one column of twelve months per year, January at the bottom
-        const n = s.y1 - s.y0 + 1, px = Math.max(3, Math.floor(w / n)), py = Math.max(1, Math.min(2, Math.floor(h / 12))), ox = X + Math.floor((w - n * px) / 2 + px / 2), by = Y + Math.floor((h + 12 * py) / 2) - py;
-        for (const d of s.dots) out.push([d, ox + (Math.floor(d.n / 12) - s.y0) * px, by - (d.n % 12) * py]);
+      if (s.view === 'year') {   // a 2 x 6 grid of months per year, January at the bottom left
+        const n = s.y1 - s.y0 + 1, px = Math.max(6, Math.floor(w / n)), ox = X + Math.floor((w - n * px) / 2 + (px - 5) / 2), top = Y + Math.floor((h - 17) / 2);
+        for (const d of s.dots) { const m = d.n % 12; out.push([d, ox + (Math.floor(d.n / 12) - s.y0) * px + (m % 2) * 3, top + (5 - Math.floor(m / 2)) * 3]); }
       } else {   // rows per sector
-        const per = Math.max(10, Math.floor(w / 2)), lines = s.sectors.reduce((a, q) => a + Math.ceil(q.months / per), 0), total = lines * 2 + (s.sectors.length - 1) * 2;
+        const per = Math.max(10, Math.floor(w / 3)), lines = s.sectors.reduce((a, q) => a + Math.ceil(q.months / per), 0), total = lines * 3 + (s.sectors.length - 1);
         let top = Y + Math.max(0, Math.floor((h - total) / 2));
         for (const q of s.sectors) {
           let k = 0;
-          for (const d of s.dots) if (d.role.sector === q) { out.push([d, X + (k % per) * 2, top + Math.floor(k / per) * 2]); k++; }
-          top += Math.ceil(q.months / per) * 2 + 2;
+          for (const d of s.dots) if (d.role.sector === q) { out.push([d, X + (k % per) * 3, top + Math.floor(k / per) * 3]); k++; }
+          top += Math.ceil(q.months / per) * 3 + 1;
         }
       }
     } else {
@@ -423,7 +423,8 @@
       }
       g.fillStyle = 'rgba(232,236,244,.18)'; g.fillRect(X, base + 3, w, 1);
     }
-    const hv = s.hover, k = reduce ? 1 : .22, sz = kind === 'experience' ? 1 : 3;
+    const dt = Math.min(.5, Math.max(0, t - (mem.t || t))), hv = s.hover, k = reduce ? 1 : 1 - Math.exp(-dt * 7), sz = kind === 'experience' ? 2 : 3;   // eased by time, so slow devices arrive as fast
+    mem.t = t;
     const live = new Set();
     for (const [d, tx, ty] of out) {
       live.add(d);

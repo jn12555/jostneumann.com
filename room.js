@@ -1255,10 +1255,18 @@ function stackPortrait() {
 if (document.fonts) document.fonts.ready.then(stackPortrait);
 function panelBox() { return portrait ? { w: vw, h: vh * .62 } : { w: Math.min(500, Math.max(vw * .44, vh <= 520 ? 360 : 0)), h: vh }; }   // matches .panel in styles.css
 function aim(id) {
-  const nav = NAV_ONLY.find(q => q.id === id), s = SPOTS.find(q => q.id === (nav ? nav.at : id)), pb = panelBox();
+  const nav = NAV_ONLY.find(q => q.id === id), pb = panelBox();
+  let s = SPOTS.find(q => q.id === (nav ? nav.at : id)), fit = .55;
+  const m = window.XPDOTS && (id === 'experience' || id === 'resources') ? SPOTS.find(q => q.id === 'about') : null;
+  if (m) {   // the screen shows their dot chart, so keep it in view with the object
+    const x = Math.min(s.x, m.x), y = Math.min(s.y, m.y);
+    s = { x, y, w: Math.max(s.x + s.w, m.x + m.w) - x, h: Math.max(s.y + s.h, m.y + m.h) - y }; fit = .9;
+  }
   const aw = portrait ? vw : vw - pb.w, ah = portrait ? vh - pb.h - HEAD : vh - HEAD;
   goal.fx = OX + s.x + s.w / 2; goal.fy = OY + s.y + s.h / 2;
-  goal.z = clamp(Math.min(aw * .55 / (s.w * s0), ah * .55 / (s.h * s0)), 1, portrait ? 2.7 : 1.8);   // frame the object with some of the room around it; phones start from the whole room, so they may come closer
+  goal.z = clamp(Math.min(aw * fit / (s.w * s0), ah * fit / (s.h * s0)), 1, portrait ? 2.7 : 1.8);   // frame the object with some of the room around it; phones start from the whole room, so they may come closer
+  const sc = s0 * goal.z;
+  if (m && aw / 2 - (goal.fx - OX - m.x) * sc < 2) goal.fx = OX + m.x + (aw / 2 - 8) / sc;   // too wide for the space: the whole screen first, 8 px from the left edge
   goal.p = 1;
 }
 function place() {
