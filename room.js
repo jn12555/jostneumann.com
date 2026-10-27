@@ -143,8 +143,10 @@ const SPOTS = [
   { id: 'contact', label: 'Contact', n: '05', x: 252, y: 121, w: 20, h: 29, line: '>CONTACT' },
   { id: 'writing', label: 'Writing', n: '03', x: 68, y: 144, w: 46, h: 13, line: '>WRITING' }
 ];
-const NAV_ONLY = [];   // panels without an object of their own ({ id, label, n, at }); the camera turns to `at`
+const HAS_LAB = !!document.getElementById('lab');   // the Lab section is a draft; the build leaves it out until it is approved
+const NAV_ONLY = HAS_LAB ? [{ id: 'lab', label: 'Lab', n: '06', at: 'about' }] : [];   // panels without an object of their own; the camera turns to `at`
 const SOURCES = { about: ['about', 'expertise'], experience: ['experience', 'education'], contact: ['contact'], writing: ['writing'], resources: ['resources'] };
+if (HAS_LAB) SOURCES.lab = ['lab'];
 
 // ---------- the 40-inch curved ultrawide (21:9) ----------
 const MON = { x: 136, w: 112, cy: 114, h0: 38, k: .14 };   // centred in the picture (x 192 on the wall = 240 on screen)   // the screen is taller at the edges than in the middle
@@ -1299,7 +1301,7 @@ addEventListener('keydown', e => {
   if (openId && (e.key === 'ArrowRight' || e.key === 'ArrowLeft') && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '')) step(e.key === 'ArrowRight' ? 1 : -1);
 });
 // move between sections without going back to the room: arrows in the panel head, keyboard arrows, or a sideways swipe
-const ORDER = ['about', 'experience', 'writing', 'resources', 'contact'];
+const ORDER = ['about', 'experience', 'writing', 'resources', 'contact'].concat(HAS_LAB ? ['lab'] : []);
 let slideDir = 0;
 function step(d) { if (!openId) return; const i = ORDER.indexOf(openId); slideDir = d; go(ORDER[(i + d + ORDER.length) % ORDER.length]); }
 document.getElementById('prev')?.addEventListener('click', () => step(-1));

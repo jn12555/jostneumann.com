@@ -106,6 +106,14 @@ html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, htm
 .posts p { color: var(--muted); margin: .45rem 0 .7rem; font-size: .95rem; }
 .posts .more { font-family: "VT323", ui-monospace, monospace; font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
 .panel-section .posts { grid-template-columns: 1fr; }
+/* Lab: project cards with a screenshot on top */
+.lab { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .9rem; }
+.lab > li { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.lab img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; border-bottom: 1px solid var(--line); }
+.lab .body { padding: 1rem 1.1rem 1.1rem; }
+.lab .body p { color: var(--muted); margin: .45rem 0 .7rem; font-size: .95rem; }
+.lab .more { font-family: "VT323", ui-monospace, monospace; font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
+.panel-section .lab { grid-template-columns: 1fr; }
 .article { padding-top: calc(var(--head) + 2.5rem); padding-bottom: 4rem; max-width: 720px; }
 .article h1 { font-size: clamp(2rem, 5vw, 2.8rem); text-transform: none; letter-spacing: 0; margin: .2rem 0 .4rem; }
 .article .meta { color: var(--muted); font-size: .9rem; margin: 0 0 1.2rem; }
