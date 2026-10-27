@@ -13,6 +13,7 @@ const html = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ---------- page basics that also matter in LO-FI mode ----------
+const T = (k, en) => (window.I18N && window.I18N[k]) || en;   // the German, Spanish and Arabic pages carry their strings in window.I18N (tools/i18n.py)
 const mail = document.getElementById('email-link');
 if (mail && mail.dataset.user && mail.dataset.user !== 'PLACEHOLDER') mail.href = 'mailto:' + mail.dataset.user + '@' + mail.dataset.domain;
 document.getElementById('year').textContent = new Date().getFullYear();
@@ -138,14 +139,14 @@ function text(c, s, x, y, col) {
 // ---------- hotspots ----------
 const HAS_LAB = !!document.getElementById('lab');   // the Lab section (tools/build.py --no-lab leaves it out)
 const SPOTS = [
-  { id: 'about', label: 'About', n: '01', x: 134, y: 90, w: 116, h: 60, line: '>ABOUT' },
-  { id: 'experience', label: 'Experience', n: '02', x: 288, y: 128, w: 63, h: 21, line: '>EXPERIENCE' },
-  { id: 'resources', label: 'Resources', n: '04', x: 354, y: 122, w: 23, h: 27, line: '>RESOURCES' },
-  { id: 'contact', label: 'Contact', n: HAS_LAB ? '06' : '05', x: 252, y: 121, w: 20, h: 29, line: '>CONTACT' },
-  { id: 'writing', label: 'Writing', n: '03', x: 68, y: 144, w: 46, h: 13, line: '>WRITING' }
+  { id: 'about', label: T('about', 'About'), n: '01', x: 134, y: 90, w: 116, h: 60, line: '>ABOUT' },
+  { id: 'experience', label: T('experience', 'Experience'), n: '02', x: 288, y: 128, w: 63, h: 21, line: '>EXPERIENCE' },
+  { id: 'resources', label: T('resources', 'Resources'), n: '04', x: 354, y: 122, w: 23, h: 27, line: '>RESOURCES' },
+  { id: 'contact', label: T('contact', 'Contact'), n: HAS_LAB ? '06' : '05', x: 252, y: 121, w: 20, h: 29, line: '>CONTACT' },
+  { id: 'writing', label: T('writing', 'Writing'), n: '03', x: 68, y: 144, w: 46, h: 13, line: '>WRITING' }
 ];
 const NAV_ONLY = [];   // panels without an object of their own ({ id, label, n, at }); the camera turns to `at`
-if (HAS_LAB) SPOTS.push({ id: 'lab', label: 'Lab', n: '05', x: 35, y: 128, w: 22, h: 21, line: '>LAB' });   // the flask on the desk
+if (HAS_LAB) SPOTS.push({ id: 'lab', label: T('lab', 'Lab'), n: '05', x: 35, y: 128, w: 22, h: 21, line: '>LAB' });   // the flask on the desk
 const SOURCES = { about: ['about', 'expertise'], experience: ['experience', 'education'], contact: ['contact'], writing: ['writing'], resources: ['resources'] };
 if (HAS_LAB) SOURCES.lab = ['lab'];
 
@@ -1362,7 +1363,7 @@ scene.addEventListener('click', e => {
 // ---------- LO-FI toggle ----------
 function setMode(isLofi, save) {
   html.classList.toggle('lofi', isLofi);
-  modeBtn.textContent = isLofi ? 'Scene' : 'LO-FI';
+  modeBtn.textContent = isLofi ? T('scene', 'Scene') : T('lofi', 'LO-FI');
   modeBtn.setAttribute('aria-pressed', String(isLofi));
   if (save) try { localStorage.setItem('jn-mode', isLofi ? 'lofi' : 'scene'); } catch (e) {}
   if (isLofi) { closePanel(); cur = { ...goal }; if (master) master.gain.setTargetAtTime(0, AC.currentTime, .2); }
@@ -1471,7 +1472,7 @@ function setSound(on, save) {
   if (on && !AC) startSound();
   soundOn = on;
   if (AC) { if (on) AC.resume(); master.gain.setTargetAtTime(on && !lofi() ? VOL : 0, AC.currentTime, on ? 1.2 : .4); }
-  soundBtn.setAttribute('aria-pressed', String(on)); soundBtn.textContent = on ? 'Sound off' : 'Sound on';
+  soundBtn.setAttribute('aria-pressed', String(on)); soundBtn.textContent = on ? T('soundOff', 'Sound off') : T('soundOn', 'Sound on');
   if (save) try { localStorage.setItem('jn-sound', on ? 'on' : 'off'); } catch (e) {}
 }
 let pending = null;                       // sound is on by default: it waits for the first tap or key press
@@ -1479,11 +1480,11 @@ soundBtn?.addEventListener('click', () => { if (pending) { pending(); setSound(f
 let wantSound = true;
 try { wantSound = localStorage.getItem('jn-sound') !== 'off'; } catch (e) {}
 if (soundBtn && wantSound) {
-  soundBtn.textContent = 'Sound off'; soundBtn.setAttribute('aria-pressed', 'true');
+  soundBtn.textContent = T('soundOff', 'Sound off'); soundBtn.setAttribute('aria-pressed', 'true');
   const resume = e => { if (e.target === soundBtn) return; pending(); setSound(true, false); };
   pending = () => { removeEventListener('pointerdown', resume); removeEventListener('keydown', resume); pending = null; };
   addEventListener('pointerdown', resume); addEventListener('keydown', resume);
-} else if (soundBtn) { soundBtn.textContent = 'Sound on'; soundBtn.setAttribute('aria-pressed', 'false'); }
+} else if (soundBtn) { soundBtn.textContent = T('soundOn', 'Sound on'); soundBtn.setAttribute('aria-pressed', 'false'); }
 // keyboard users can jump straight to the text version
 document.getElementById('skip')?.addEventListener('click', e => { e.preventDefault(); setMode(true, true); const m = document.getElementById('lofi'); m.setAttribute('tabindex', '-1'); m.focus(); });
 
@@ -1496,7 +1497,7 @@ let chipT = 0;
 function updateTimeChip() {
   if (!timeChip) return;
   const h = hourNow(), hh = String(Math.floor(h)).padStart(2, '0'), mm = String(Math.floor((h * 60) % 60)).padStart(2, '0');
-  const part = h < 5 ? 'Night' : h < 7 ? 'Dawn' : h < 12 ? 'Morning' : h < 14 ? 'Midday' : h < 17.5 ? 'Afternoon' : h < 19.5 ? 'Dusk' : h < 21.5 ? 'Evening' : 'Night';
+  const part = h < 5 ? T('night', 'Night') : h < 7 ? T('dawn', 'Dawn') : h < 12 ? T('morning', 'Morning') : h < 14 ? T('midday', 'Midday') : h < 17.5 ? T('afternoon', 'Afternoon') : h < 19.5 ? T('dusk', 'Dusk') : h < 21.5 ? T('evening', 'Evening') : T('night', 'Night');
   timeChip.textContent = `${hh}:${mm} · ${part}`;
 }
 updateTimeChip(); setInterval(updateTimeChip, 10000);   // also runs while the animation is paused

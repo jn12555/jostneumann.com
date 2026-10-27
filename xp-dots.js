@@ -9,9 +9,9 @@
   const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
   const SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const SECTORS = [   // matched against the organization line, first match wins
-    { id: 'un', label: 'United Nations', color: '#5fb4ef', test: /UN Tourism|United Nations/i },
+    { id: 'un', label: 'United Nations', color: '#5fb4ef', test: /UN Tourism|United Nations|ONU Turismo|Vereinte Nationen|الأمم المتحدة/i },
     { id: 'phil', label: 'Philanthropy', color: '#ffb35a', test: /Care Foundation/i },
-    { id: 'hum', label: 'Humanitarian', color: '#ef7a5f', test: /Rescue/i },
+    { id: 'hum', label: 'Humanitarian', color: '#ef7a5f', test: /Rescue|Rescate|الإنقاذ/i },
     { id: 'priv', label: 'Private sector', color: '#9ad57f', test: /Agri|Holding/i },
     { id: 'res', label: 'Research', color: '#c3b2f2', test: /./ },
   ];
@@ -27,14 +27,20 @@
   const esc = s => s.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
   const nowMonth = () => { const d = new Date(); return d.getFullYear() * 12 + d.getMonth(); };
   const STATE = {};   // what the desk screen shows: the chart in the open panel
+  // strings: English here, the German, Spanish and Arabic pages carry theirs in window.I18N (tools/i18n.py)
+  const L = window.I18N || {}, T = (k, en, v) => String(L[k] || en).replace(/\{(\w+)\}/g, (_, n) => v && n in v ? v[n] : '');
+  const LMONTHS = (L.months || []).map(m => m.toLowerCase()), LSHORT = L.monthsShort || SHORT, DATE = L.dateFmt || '{m} {y}';
+  const dec = v => v.toFixed(1).replace('.', L.decimal || '.');
+  const PIXEL = document.documentElement.lang === 'ar' ? 'VT323, "Segoe UI", Tahoma, sans-serif' : 'VT323, ui-monospace, monospace';   // as --pixel in styles.css
+  const monthOf = w => { w = w.toLowerCase(); const i = MONTHS.indexOf(w); return i >= 0 ? i : LMONTHS.indexOf(w); };
 
   // "March 2025 – present" -> [start, end] as month numbers (year * 12 + month)
   function parseWhen(s, now) {
-    const parts = s.toLowerCase().split(/\s*[–—-]\s*/), m = p => { const r = p.match(/([a-z]+)\s+(\d{4})/); return r && MONTHS.includes(r[1]) ? +r[2] * 12 + MONTHS.indexOf(r[1]) : null; };
-    const a = m(parts[0] || ''), b = /present/.test(parts[1] || '') ? now : m(parts[1] || '');
+    const parts = s.toLowerCase().split(/\s*[–—]\s*|\s+-\s+/), m = p => { const r = p.match(/(\p{L}+)\s+(?:de\s+)?(\d{4})/u); return r && monthOf(r[1]) >= 0 ? +r[2] * 12 + monthOf(r[1]) : null; };
+    const now_ = new RegExp('present' + (L.present ? '|' + L.present : ''), 'i'), a = m(parts[0] || ''), b = now_.test(parts[1] || '') ? now : m(parts[1] || '');
     return a != null && b != null && b >= a ? [a, b] : null;
   }
-  const fmt = n => SHORT[n % 12] + ' ' + Math.floor(n / 12);
+  const fmt = n => DATE.replace('{m}', LSHORT[n % 12]).replace('{y}', Math.floor(n / 12));
   // the list that follows a heading whose text matches re
   function listAfter(scope, re) {
     const h = [...scope.querySelectorAll('h2')].find(q => re.test(q.textContent)); if (!h) return [];
@@ -108,13 +114,19 @@
       const m = org.textContent.match(/(\d{4})(?:\s*[–-]\s*(\d{4}))?\s*$/); if (!m) return;
       extras.push({ li, kind, title: h.textContent.trim(), org: org.textContent.trim(), from: +m[1], to: +(m[2] || m[1]) });
     });
-    read(/advisory/i, 'adv'); read(/^\s*education\s*$/i, 'edu'); read(/certification/i, 'cert');
+    const uls = [...scope.querySelectorAll('ul.plain')];   // Education, Certifications, Advisory roles, in this order on every page
+    if (uls.length === 3) [['edu', 0], ['cert', 1], ['adv', 2]].forEach(([kind, k]) => [...uls[k].children].forEach(li => {
+      const h = li.querySelector('h3'), org = li.querySelector('.org'); if (!h || !org) return;
+      const m = org.textContent.match(/(\d{4})(?:\s*[–-]\s*(\d{4}))?\s*$/); if (!m) return;
+      extras.push({ li, kind, title: h.textContent.trim(), org: org.textContent.trim(), from: +m[1], to: +(m[2] || m[1]) });
+    }));
+    else { read(/advisory/i, 'adv'); read(/^\s*education\s*$/i, 'edu'); read(/certification/i, 'cert'); }
 
     // one dot per month; where two roles overlap by a month, the later role keeps it
     const first = roles[0].start, owner = new Map();
     for (const r of roles) for (let n = r.start; n <= r.end; n++) owner.set(n, r);
     const dots = [...owner.keys()].sort((a, b) => a - b).map((n, i) => ({ n, i, role: owner.get(n), x: 0, y: 0, sx: 0, sy: 0, tx: 0, ty: 0, t0: 0, a: 0 }));
-    const sectors = SECTORS.map(s => ({ ...s, months: dots.filter(d => d.role.sector === s).length })).filter(s => s.months).sort((a, b) => b.months - a.months);
+    const sectors = SECTORS.map(s => ({ ...s, label: T('sec_' + s.id, s.label), months: dots.filter(d => d.role.sector === s).length })).filter(s => s.months).sort((a, b) => b.months - a.months);
     roles.forEach(r => { r.sector = sectors.find(s => s.id === r.sector.id) || r.sector; r.li.style.setProperty('--hl', r.sector.color); });   // point the roles at the counted copies; --hl colours the linked highlight
     extras.forEach(e => e.li.style.setProperty('--hl', e.kind === 'adv' ? ADV : e.kind === 'edu' ? EDU : CERT));
     const wy0 = Math.floor(first / 12), y1 = Math.floor(now / 12), y0 = Math.min(wy0, ...extras.map(e => e.from));
@@ -122,16 +134,16 @@
     const maxAdv = Math.max(0, ...Array.from({ length: y1 - y0 + 1 }, (_, k) => advIn(y0 + k).length));
     const hasEdu = extras.some(e => e.kind !== 'adv');
 
-    const startName = MONTHS[first % 12].replace(/^./, ch => ch.toUpperCase()) + ' ' + wy0;
-    const fig = figure('Experience in data dots',
-      '<button type="button" class="chip" data-view="year" aria-pressed="true">By year</button><button type="button" class="chip" data-view="sector" aria-pressed="false">By sector</button>',
-      `Each dot is one month of professional experience since ${startName}, coloured by sector.` + (maxAdv ? ' Hollow dots under each year count the advisory roles held that year;' : '') +
-      (hasEdu ? ' triangles mark degrees and diamonds certifications.' : '') + ' Hover over or tap a dot for details; select it to go to the entry below.', 'View');
+    const startName = DATE.replace('{m}', L.months ? L.months[first % 12] : MONTHS[first % 12].replace(/^./, ch => ch.toUpperCase())).replace('{y}', wy0);
+    const fig = figure(T('xpKicker', 'Experience in data dots'),
+      `<button type="button" class="chip" data-view="year" aria-pressed="true">${T('byYear', 'By year')}</button><button type="button" class="chip" data-view="sector" aria-pressed="false">${T('bySector', 'By sector')}</button>`,
+      T('xpCaption', 'Each dot is one month of professional experience since {start}, coloured by sector.', { start: startName }) + (maxAdv ? T('xpCaptionAdv', ' Hollow dots under each year count the advisory roles held that year;') : '') +
+      (hasEdu ? T('xpCaptionEdu', ' triangles mark degrees and diamonds certifications.') : '') + T('xpCaptionEnd', ' Hover over or tap a dot for details; select it to go to the entry below.'), T('viewLabel', 'View'));
     fig.dataset.kind = 'experience';
     list.parentElement.insertBefore(fig, list);
     const cv = fig.querySelector('canvas'), tip = fig.querySelector('.xp-tip'), stage = fig.querySelector('.xp-stage'), c = cv.getContext('2d');
-    cv.setAttribute('aria-label', `Dot chart of ${dots.length} months (about ${(dots.length / 12).toFixed(1)} years) of professional experience by year and sector: ` +
-      sectors.map(s => `${s.label} ${(s.months / 12).toFixed(1)} years`).join(', ') + (maxAdv ? `; with ${extras.filter(e => e.kind === 'adv').length} advisory roles, degrees and certifications by year` : '') + '.');
+    cv.setAttribute('aria-label', T('xpAria', 'Dot chart of {months} months (about {years} years) of professional experience by year and sector: {list}.', {
+      months: dots.length, years: dec(dots.length / 12), list: sectors.map(s => `${s.label} ${dec(s.months / 12)} ${T('yearsWord', 'years')}`).join(', ') }));
 
     let view = 'year', W = 0, H = 0, P = 6, S = 4, LAY = null, hover = null;   // hover: { role } | { sector } | { items }
     const st = { fig, get view() { return view; }, get hover() { return hover; }, dots, sectors, y0: wy0, y1, now };
@@ -195,15 +207,15 @@
       for (const q of LAY.adv) { c.globalAlpha = fade * (itemOn(q.items) ? 1 : .25); c.strokeStyle = ADV; c.lineWidth = 1; c.strokeRect(Math.round(q.x) + .5, Math.round(q.y) + .5, S - 1, S - 1); }
       for (const q of LAY.marks) { c.globalAlpha = fade * (itemOn([q.item]) ? 1 : .25); (q.item.kind === 'edu' ? triangle : diamond)(q.x, q.y, LAY.M, q.item.kind === 'edu' ? EDU : CERT); }
       c.globalAlpha = 1;
-      c.font = '14px VT323, ui-monospace, monospace'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillStyle = '#8a8078';
+      c.font = '14px ' + PIXEL; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillStyle = '#8a8078';
       for (const l of LAY.labels) c.fillText(l.text, l.x, LAY.labelY);
       // sector rows: label with the years, and ghost slots for the dots
       c.textAlign = 'left';
       for (const r of LAY.rows) {
         const on = hover && ((hover.sector === r.s) || (hover.role && hover.role.sector === r.s));
-        c.font = '16px VT323, ui-monospace, monospace'; c.fillStyle = r.s.color; c.globalAlpha = hover ? (on ? 1 : .45) : 1;
+        c.font = '16px ' + PIXEL; c.fillStyle = r.s.color; c.globalAlpha = hover ? (on ? 1 : .45) : 1;
         c.fillRect(2, r.top + 4, S + 1, S + 1);
-        c.fillText(`${r.s.label.toUpperCase()}  ${(r.s.months / 12).toFixed(1)} YRS`, 2 + S + 7, r.top + 12);
+        c.fillText(`${r.s.label.toUpperCase()}  ${dec(r.s.months / 12)} ${T('yrs', 'YRS')}`, 2 + S + 7, r.top + 12);
         c.globalAlpha = 1; c.fillStyle = GHOST;
         for (let k = 0; k < r.s.months; k++) c.fillRect(2 + (k % r.per) * P, r.dotsTop + Math.floor(k / r.per) * P, S, S);
       }
@@ -231,8 +243,8 @@
     }
     function describe(h) {
       if (!h.hit) return null;
-      if (h.hit.d) { const r = h.hit.d.role; return { hover: { role: r }, lis: [r.li], html: `<b>${esc(r.title)}</b><span>${esc(r.org)} · ${fmt(r.start)} – ${r.end === now ? 'present' : fmt(r.end)}</span>` }; }
-      if (h.hit.adv) { const q = h.hit.adv; return { hover: { items: q.items }, lis: q.items.map(i => i.li), html: `<b>Advisory roles, ${q.year}</b><span>${q.items.map(i => esc(i.title + ', ' + i.org.split('·')[0].trim())).join('<br>')}</span>` }; }
+      if (h.hit.d) { const r = h.hit.d.role; return { hover: { role: r }, lis: [r.li], html: `<b>${esc(r.title)}</b><span>${esc(r.org)} · ${fmt(r.start)} – ${r.end === now ? T('presentWord', 'present') : fmt(r.end)}</span>` }; }
+      if (h.hit.adv) { const q = h.hit.adv; return { hover: { items: q.items }, lis: q.items.map(i => i.li), html: `<b>${esc(T('advisoryYear', 'Advisory roles, {year}', { year: q.year }))}</b><span>${q.items.map(i => esc(i.title + ', ' + i.org.split('·')[0].trim())).join('<br>')}</span>` }; }
       const i = h.hit.mark.item; return { hover: { items: [i] }, lis: [i.li], html: `<b>${esc(i.title)}</b><span>${esc(i.org)}</span>` };
     }
     const allLis = roles.map(r => r.li).concat(extras.map(e => e.li));
@@ -280,30 +292,32 @@
     const sec = li0.closest('section'); if (!sec) return;
     const old = sec.querySelector('.xp-viz'); if (old) old.remove();
     const items = [], groupsSeen = [];
-    sec.querySelectorAll('h2.sub').forEach(h => {
-      const g = GROUPS.find(q => q.test.test(h.textContent)); let ul = h.nextElementSibling; while (ul && ul.tagName !== 'UL') ul = ul.nextElementSibling;
+    sec.querySelectorAll('h2.sub').forEach((h, gi) => {
+      // Publications, Talks and panels, Media and coverage, in this order on every page
+      const g = GROUPS.find(q => q.test.test(h.textContent)) || GROUPS[gi]; let ul = h.nextElementSibling; while (ul && ul.tagName !== 'UL') ul = ul.nextElementSibling;
       if (!g || !ul) return;
       groupsSeen.push({ g, h, ul });
       [...ul.children].forEach(li => {
         const a = li.querySelector('h3'), org = li.querySelector('.org'); if (!a || !org) return;
-        const m = org.textContent.match(/(?:(january|february|march|april|may|june|july|august|september|october|november|december)\s+)?((?:19|20)\d{2})/i); if (!m) return;
-        items.push({ li, g, title: a.textContent.trim(), org: org.textContent.trim(), year: +m[2], when: +m[2] * 12 + (m[1] ? MONTHS.indexOf(m[1].toLowerCase()) : 0) });
+        const m = org.textContent.match(/(?:(\p{L}+)\s+(?:de\s+)?)?((?:19|20)\d{2})/u); if (!m) return;
+        const mi = m[1] ? monthOf(m[1]) : -1;
+        items.push({ li, g, title: a.textContent.trim(), org: org.textContent.trim(), year: +m[2], when: +m[2] * 12 + Math.max(0, mi) });
       });
     });
     if (!items.length) return;
     items.sort((a, b) => a.when - b.when).forEach((it, i) => Object.assign(it, { i, x: 0, y: 0, sx: 0, sy: 0, tx: 0, ty: 0, t0: 0, a: 0, ta: 1 }));
     items.forEach(it => it.li.style.setProperty('--hl', it.g.color));
     const ry0 = Math.min(...items.map(i => i.year)), ry1 = Math.max(...items.map(i => i.year));
-    const groups = GROUPS.filter(g => items.some(i => i.g === g));
+    const groups = GROUPS.filter(g => items.some(i => i.g === g)), gLabel = g => T('grp_' + g.id, g.label);
 
-    const chips = '<button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>' +
-      groups.map(g => `<button type="button" class="chip" data-filter="${g.id}" aria-pressed="false" style="--c:${g.color}"><i></i>${g.label}</button>`).join('');
-    const fig = figure('Resources in data dots', chips,
-      'Each dot is one publication, talk or media item, placed by year and coloured by type. The buttons filter the list below; hover over or tap a dot for the title, and select it to go to the item.', 'Filter');
+    const chips = `<button type="button" class="chip" data-filter="all" aria-pressed="true">${T('all', 'All')}</button>` +
+      groups.map(g => `<button type="button" class="chip" data-filter="${g.id}" aria-pressed="false" style="--c:${g.color}"><i></i>${gLabel(g)}</button>`).join('');
+    const fig = figure(T('rsKicker', 'Resources in data dots'), chips,
+      T('rsCaption', 'Each dot is one publication, talk or media item, placed by year and coloured by type. The buttons filter the list below; hover over or tap a dot for the title, and select it to go to the item.'), T('filterLabel', 'Filter'));
     fig.dataset.kind = 'resources';
     sec.insertBefore(fig, groupsSeen[0].h);
     const cv = fig.querySelector('canvas'), tip = fig.querySelector('.xp-tip'), stage = fig.querySelector('.xp-stage'), c = cv.getContext('2d');
-    cv.setAttribute('aria-label', `Dot chart of ${items.length} resources by year, ${ry0} to ${ry1}: ` + groups.map(g => `${items.filter(i => i.g === g).length} ${g.label.toLowerCase()}`).join(', ') + '.');
+    cv.setAttribute('aria-label', T('rsAria', 'Dot chart of {n} resources by year, {y0} to {y1}: {list}.', { n: items.length, y0: ry0, y1: ry1, list: groups.map(g => `${items.filter(i => i.g === g).length} ${/^de/.test(document.documentElement.lang) ? gLabel(g) : gLabel(g).toLowerCase()}`).join(', ') }));   // German nouns keep their capital
 
     let filter = 'all', hover = null, W = 0, H = 0, D = 12, LAY = null;
     const st = { fig, get filter() { return filter; }, get hover() { return hover; }, items, y0: ry0, y1: ry1 };
@@ -345,7 +359,7 @@
       c.clearRect(0, 0, W, H);
       const t = ts / 1000;
       c.fillStyle = GHOST; c.fillRect(0, LAY.base + 1, W, 1);
-      c.font = '14px VT323, ui-monospace, monospace'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+      c.font = '14px ' + PIXEL; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
       for (const col of LAY.cols) {
         const n = items.filter(i => i.year === col.year && shown(i)).length;
         c.fillStyle = '#8a8078'; c.fillText(String(col.year), col.cx, LAY.base + 17);
@@ -412,19 +426,20 @@
     return null;
   }
   function mountAbout(root) {
-    const prose = [...root.querySelectorAll('.prose')].find(q => { const h = q.closest('section') && q.closest('section').querySelector('h2'); return h && /^\s*about\s*$/i.test(h.textContent); });
+    const prose = root.querySelector('.prose');   // the About text is the only .prose on the page
     if (!prose) return;
     const sec = prose.closest('section'), old = sec.querySelector('.xp-viz'); if (old) old.remove();
     const text = prose.textContent, figs = [];
-    let m = text.match(/approximately EUR (\d+) million of philanthropic capital/);
+    if (L.figs) L.figs.forEach(f => { if (text.includes(f.phrase)) figs.push({ key: f.key, n: f.n, num: k => f.num.replace('{n}', k), lab: f.lab, unit: f.unit, color: f.key === 'inv' ? '#ffb35a' : '#ffe7a8', phrase: f.phrase }); });
+    let m = !L.figs && text.match(/approximately EUR (\d+) million of philanthropic capital/);
     if (m) figs.push({ key: 'inv', n: +m[1], num: k => `EUR ${k} million`, lab: 'philanthropic capital invested in destination projects, approximately', unit: '1 dot = EUR 1 million', color: '#ffb35a', phrase: m[0] });
-    m = text.match(/more than EUR (\d+) million from institutional donors/);
+    m = !L.figs && text.match(/more than EUR (\d+) million from institutional donors/);
     if (m) figs.push({ key: 'mob', n: +m[1], num: k => `EUR ${k} million`, lab: 'mobilized from institutional donors, more than', unit: '1 dot = EUR 1 million', color: '#ffe7a8', phrase: m[0] });
     if (!figs.length) return;
 
     const fig = document.createElement('figure'); fig.className = 'xp-viz'; fig.dataset.kind = 'about';
-    fig.innerHTML = '<div class="xp-bar"><p class="xp-kicker">About in data dots</p></div><div class="xp-tiles"></div>' +
-      '<figcaption>Each dot stands for one unit, as noted on the tile. Hover over or tap a tile or a highlighted phrase in the text to link the two.</figcaption>';
+    fig.innerHTML = `<div class="xp-bar"><p class="xp-kicker">${T('abKicker', 'About in data dots')}</p></div><div class="xp-tiles"></div>` +
+      `<figcaption>${T('abCaption', 'Each dot stands for one unit, as noted on the tile. Hover over or tap a tile or a highlighted phrase in the text to link the two.')}</figcaption>`;
     sec.insertBefore(fig, prose);
     const box = fig.querySelector('.xp-tiles');
     let hover = null;
@@ -481,11 +496,11 @@
     { test: /data/i, color: '#7ff5d2', rows: ['#.#.#.#.#', '.........', '#.#.#.###', '......#..', '#.#.###.#', '..#......', '###.#.#.#'] },
   ];
   function mountExpertise(root) {
-    const list = [...root.querySelectorAll('ul.cards')].find(u => { const h = u.closest('section') && u.closest('section').querySelector('h2'); return h && /expertise/i.test(h.textContent); });
+    const list = root.querySelector('ul.cards');   // the Areas of expertise cards are the only .cards on the page
     if (!list) return;
     const P = 4, S = 3, W = 9 * P - 1, H = 7 * P - 1;
     [...list.children].forEach((li, idx) => {
-      const kw = li.querySelector('.kw'), icon = kw && ICONS.find(q => q.test.test(kw.textContent)); if (!icon) return;
+      const kw = li.querySelector('.kw'), icon = kw && (ICONS.find(q => q.test.test(kw.textContent)) || ICONS[idx]); if (!icon) return;   // by keyword, or by order on the translated pages
       const old = li.querySelector('canvas.xp-icon'); if (old) old.remove();   // a clone of the page section brings an empty copy
       li.classList.add('xp-card'); li.classList.remove('xp-in'); li.style.setProperty('--hl', icon.color); li.style.setProperty('--d', idx * 120 + 'ms');
       const cv = document.createElement('canvas'); cv.className = 'xp-icon'; cv.setAttribute('aria-hidden', 'true'); li.prepend(cv);

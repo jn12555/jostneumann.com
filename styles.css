@@ -10,7 +10,15 @@
   --ph-bg: #4a3a14;
   --ph-text: #ffe08a;
   --head: 56px;
+  --pixel: "VT323", ui-monospace, monospace;   /* the pixel font of labels and buttons */
 }
+/* Arabic: the pixel font has no Arabic letters; they fall to a proportional Arabic font (a monospace one spreads them apart), set a little smaller */
+html[lang="ar"] { --pixel: "VT323", "Segoe UI", Tahoma, "Noto Sans Arabic", "Geeza Pro", sans-serif; }
+html[lang="ar"] .sections a, html[lang="ar"] .touch-menu a { font-size: 1.08rem; }
+html[lang="ar"] .chip, html[lang="ar"] .panel-kicker, html[lang="ar"] .xp-kicker { font-size: .98rem; }
+html[lang="ar"] .kw, html[lang="ar"] .when, html[lang="ar"] .more, html[lang="ar"] .eyebrow { font-size: .9rem; }
+html[lang="ar"] .xp-num { font-size: 1.5rem; }
+html[lang="ar"] h2 { line-height: 1.4; }
 
 * { box-sizing: border-box; }
 .skip { position: fixed; left: 12px; top: -60px; z-index: 50; padding: .6rem .9rem; background: var(--paper); color: #1a1410; border-radius: 6px; font-weight: 700; text-decoration: none; transition: top .2s; }
@@ -44,7 +52,7 @@ h1, h2, h3 { margin: 0; line-height: 1.2; }
 }
 .sections { display: flex; gap: .35rem; }
 .sections a {
-  font-family: "VT323", ui-monospace, monospace; font-size: 1.45rem; line-height: 1;
+  font-family: var(--pixel); font-size: 1.45rem; line-height: 1;
   letter-spacing: .08em; text-transform: uppercase;
   color: rgba(236, 228, 216, .78); text-decoration: none;
   padding: .3rem .6rem; border-radius: 3px;
@@ -68,7 +76,7 @@ html.js:not(.lofi) body { overflow: hidden; }
 
 .tip {
   position: fixed; z-index: 20; pointer-events: none;
-  font-family: "VT323", ui-monospace, monospace; font-size: 1.3rem; line-height: 1;
+  font-family: var(--pixel); font-size: 1.3rem; line-height: 1;
   letter-spacing: .08em; text-transform: uppercase;
   background: var(--paper); color: #1a1410; padding: .3rem .5rem .25rem; border-radius: 2px;
   opacity: 0; transform: translate(-50%, -100%); transition: opacity .15s;
@@ -93,10 +101,10 @@ html.js:not(.lofi) body { overflow: hidden; }
 .intro-role { color: var(--text); opacity: .92; font-size: 1.02rem; line-height: 1.4; margin-top: .55rem !important; }
 .intro-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem !important; }
 .intro-tags span {
-  font-family: "VT323", ui-monospace, monospace; font-size: 1.08rem; line-height: 1; letter-spacing: .06em; text-transform: uppercase;
+  font-family: var(--pixel); font-size: 1.08rem; line-height: 1; letter-spacing: .06em; text-transform: uppercase;
   color: var(--screen); border: 1px solid rgba(127, 245, 210, .38); background: rgba(127, 245, 210, .07); border-radius: 999px; padding: .26rem .58rem .2rem;
 }
-.kw { font-family: "VT323", ui-monospace, monospace; font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; color: var(--screen); margin: 0 0 .25rem !important; }
+.kw { font-family: var(--pixel); font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; color: var(--screen); margin: 0 0 .25rem !important; }
 .chip.time { cursor: default; color: var(--paper); }
 html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, html.og .tip { display: none !important; }
 /* writing: featured posts and article pages */
@@ -104,7 +112,7 @@ html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, htm
 .posts a { display: block; height: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem; color: var(--text); text-decoration: none; }
 .posts a { transition: border-color .3s; }
 .posts p { color: var(--muted); margin: .45rem 0 .7rem; font-size: .95rem; }
-.posts .more { font-family: "VT323", ui-monospace, monospace; font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
+.posts .more { font-family: var(--pixel); font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
 .panel-section .posts { grid-template-columns: 1fr; }
 /* Lab: project cards with a screenshot on top */
 .lab { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .9rem; }
@@ -112,14 +120,14 @@ html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, htm
 .lab img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; border-bottom: 1px solid var(--line); }
 .lab .body { padding: 1rem 1.1rem 1.1rem; }
 .lab .body p { color: var(--muted); margin: .45rem 0 .7rem; font-size: .95rem; }
-.lab .more { font-family: "VT323", ui-monospace, monospace; font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
+.lab .more { font-family: var(--pixel); font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
 .lab .more a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .panel-section .lab { grid-template-columns: 1fr; }
 .article { padding-top: calc(var(--head) + 2.5rem); padding-bottom: 4rem; max-width: 720px; }
 .article h1 { font-size: clamp(2rem, 5vw, 2.8rem); text-transform: none; letter-spacing: 0; margin: .2rem 0 .4rem; }
 .article .meta { color: var(--muted); font-size: .9rem; margin: 0 0 1.2rem; }
 .article .lead { margin: 0 0 1.6rem; color: var(--text); }
-.article h2 { font-family: "VT323", ui-monospace, monospace; font-weight: 400; font-size: 1.7rem; letter-spacing: .05em; text-transform: uppercase; color: var(--lamp); margin: 2rem 0 .6rem; }
+.article h2 { font-family: var(--pixel); font-weight: 400; font-size: 1.7rem; letter-spacing: .05em; text-transform: uppercase; color: var(--lamp); margin: 2rem 0 .6rem; }
 .article p, .article li { line-height: 1.7; }
 .article ul { padding-left: 1.2rem; }
 .article li { margin: .35rem 0; }
@@ -129,7 +137,7 @@ html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, htm
 .anim figcaption a, .article p a, .article li a { color: var(--lamp); }
 html.lofi .chip.time, html:not(.js) .chip.time, html.lofi #sound, html:not(.js) #sound { display: none; }
 #sound[aria-pressed="true"] { color: var(--screen); border-color: rgba(127, 245, 210, .5); }
-.intro-hint { font-family: "VT323", ui-monospace, monospace; font-size: 1.3rem; color: var(--screen); margin-top: .5rem !important; letter-spacing: .06em; }
+.intro-hint { font-family: var(--pixel); font-size: 1.3rem; color: var(--screen); margin-top: .5rem !important; letter-spacing: .06em; }
 .intro-hint::before { content: "> "; }
 .intro-hint::after { content: "_"; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
@@ -156,7 +164,7 @@ body.panel-open .intro { opacity: 0; }
   border-bottom: 1px dashed var(--line);
 }
 .panel-kicker {
-  margin: 0; font-family: "VT323", ui-monospace, monospace; font-size: 1.5rem;
+  margin: 0; font-family: var(--pixel); font-size: 1.5rem;
   letter-spacing: .1em; text-transform: uppercase; color: var(--screen);
 }
 .panel-body { overflow-y: auto; padding: 8px 28px 40px; touch-action: pan-y; }
@@ -177,7 +185,7 @@ body.panel-open .intro { opacity: 0; }
 
 /* ---------- chips and dock ---------- */
 .chip {
-  font-family: "VT323", ui-monospace, monospace; font-size: 1.15rem; line-height: 1;
+  font-family: var(--pixel); font-size: 1.15rem; line-height: 1;
   letter-spacing: .08em; text-transform: uppercase;
   color: var(--text); background: rgba(18, 15, 22, .82);
   border: 1px solid #3a3242; border-radius: 999px;
@@ -186,6 +194,15 @@ body.panel-open .intro { opacity: 0; }
 .chip:hover { border-color: var(--paper); }
 .chip:focus-visible, .sections a:focus-visible, .btn:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
 .dock { position: fixed; right: 20px; bottom: 20px; z-index: 28; display: flex; gap: .5rem; }
+/* language choice: a chip with a small list (no script needed) */
+.langs { position: relative; }
+.langs > summary { list-style: none; cursor: pointer; }
+.langs > summary::-webkit-details-marker { display: none; }
+.langs ul { position: absolute; z-index: 40; right: 0; bottom: calc(100% + 6px); margin: 0; padding: .3rem; list-style: none; min-width: 9rem;
+  background: rgba(18, 15, 22, .96); border: 1px solid #3a3242; border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, .4); }
+.langs a { display: block; padding: .38rem .65rem; border-radius: 5px; color: var(--text); text-decoration: none; font-size: .92rem; }
+.langs a:hover, .langs a:focus-visible { background: rgba(255, 231, 168, .1); }
+.langs a[aria-current] { color: var(--paper); background: rgba(255, 231, 168, .14); }
 .chip.draft { cursor: help; color: var(--ph-text); border-color: #5a4a20; }
 body.panel-open .dock { opacity: 0; pointer-events: none; }
 
@@ -197,13 +214,13 @@ html.lofi .top, html:not(.js) .top { background: rgba(18, 15, 22, .94); border-b
 .draft-banner .ph { background: transparent; text-decoration: underline; }
 
 .hero { padding-top: 4rem; padding-bottom: 3rem; }
-.eyebrow { font-family: "VT323", ui-monospace, monospace; font-size: 1.35rem; color: var(--screen); margin: 0 0 .5rem; letter-spacing: .04em; }
+.eyebrow { font-family: var(--pixel); font-size: 1.35rem; color: var(--screen); margin: 0 0 .5rem; letter-spacing: .04em; }
 h1 { font-weight: 800; font-size: clamp(2.4rem, 7vw, 4rem); text-transform: uppercase; letter-spacing: .01em; }
 .lead { font-size: 1.15rem; color: var(--muted); max-width: 38em; margin: 1.25rem 0 0; }
 
 .section { padding-top: 2.75rem; padding-bottom: 2.75rem; border-top: 1px solid var(--line); }
 .section h2, .panel-section h2 {
-  font-family: "VT323", ui-monospace, monospace; font-weight: 400;
+  font-family: var(--pixel); font-weight: 400;
   font-size: 1.9rem; letter-spacing: .06em; text-transform: uppercase; color: var(--lamp);
   margin-bottom: 1rem;
 }
@@ -217,7 +234,7 @@ h2.sub { margin-top: 1.75rem; }
 }
 .scene-disclaimer a { pointer-events: auto; color: #d8d0c4; text-decoration: underline; }
 .scene-disclaimer {
-  font-size: .72rem; color: #d8d0c4; max-width: min(640px, calc(100% - 400px)); padding: .3rem .6rem; border-radius: 6px;   /* clear of the chips on the right */
+  font-size: .72rem; color: #d8d0c4; max-width: min(640px, calc(100% - 470px)); padding: .3rem .6rem; border-radius: 6px;   /* clear of the chips on the right */
   background: rgba(14, 11, 18, .62); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
 }
 body.panel-open .scene-disclaimer { opacity: 0; }
@@ -237,13 +254,13 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .timeline { list-style: none; padding: 0; margin: 0; }
 .timeline > li { display: grid; grid-template-columns: 150px 1fr; gap: 1.5rem; padding: 1.1rem 0; border-bottom: 1px dashed var(--line); }
 .timeline > li:last-child { border-bottom: 0; }
-.when { font-family: "VT323", ui-monospace, monospace; font-size: 1.2rem; color: var(--screen); margin: 0; }
+.when { font-family: var(--pixel); font-size: 1.2rem; color: var(--screen); margin: 0; }
 .org { color: var(--muted); font-size: .95rem; margin: .25rem 0 .5rem; }
 .timeline ul { margin: 0; padding-left: 1.1rem; }
 /* data dots for Experience and Resources (xp-dots.js) */
 .xp-viz { margin: 0 0 1.4rem; padding: .9rem 1rem .8rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
 .xp-bar { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; margin-bottom: .7rem; }
-.xp-kicker { margin: 0; font-family: "VT323", ui-monospace, monospace; font-size: 1.15rem; letter-spacing: .08em; text-transform: uppercase; color: var(--screen); }
+.xp-kicker { margin: 0; font-family: var(--pixel); font-size: 1.15rem; letter-spacing: .08em; text-transform: uppercase; color: var(--screen); }
 .xp-views { display: flex; flex-wrap: wrap; gap: .35rem; }
 .xp-views .chip { font-size: 1rem; padding: .32rem .65rem .28rem; }
 .xp-views .chip[aria-pressed="true"] { background: var(--paper); color: #1a1410; border-color: var(--paper); }
@@ -312,7 +329,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .xp-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .7rem; }
 .xp-tile { position: relative; padding: .7rem .8rem .75rem; border: 1px solid var(--line); border-radius: 6px; background: rgba(18, 15, 22, .45); transition: border-color .25s, box-shadow .25s; }
 .xp-tile.xp-on { border-color: var(--hl); box-shadow: 0 0 0 1px color-mix(in srgb, var(--hl) 40%, transparent), 0 0 18px color-mix(in srgb, var(--hl) 18%, transparent); }
-.xp-num { margin: 0; font-family: "VT323", ui-monospace, monospace; font-size: 1.9rem; line-height: 1; color: var(--hl); letter-spacing: .02em; }
+.xp-num { margin: 0; font-family: var(--pixel); font-size: 1.9rem; line-height: 1; color: var(--hl); letter-spacing: .02em; }
 .xp-lab { margin: .2rem 0 .55rem; color: var(--text); font-size: .86rem; line-height: 1.35; }
 .xp-unit { margin: .45rem 0 0; color: var(--muted); font-size: .74rem; }
 .xp-tile canvas { display: block; width: 100%; }
@@ -354,7 +371,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
     transition: opacity .3s;
   }
   .touch-menu a {
-    font-family: "VT323", ui-monospace, monospace; font-size: 1.35rem; letter-spacing: .04em; text-transform: uppercase;
+    font-family: var(--pixel); font-size: 1.35rem; letter-spacing: .04em; text-transform: uppercase;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     color: var(--text); text-decoration: none; background: var(--surface);
     border: 1px solid #3a3242; border-radius: 6px; padding: .5rem .8rem .42rem;
@@ -364,6 +381,11 @@ body.panel-open .scene-disclaimer { opacity: 0; }
   .touch-menu a:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .scene-disclaimer { top: var(--disc-top, auto); bottom: auto; left: 20px; right: 20px; max-width: 560px; }
   .dock { top: var(--dock-top, auto); bottom: auto; left: 16px; right: auto; flex-wrap: wrap; }
+  .dock { z-index: 32; }   /* above the header, for the language chip in its corner */
+  .langs { position: fixed; top: 12px; right: 16px; }   /* phones: in the header corner, opening downwards */
+  .langs ul { top: calc(100% + 6px); bottom: auto; }
+  html[dir="rtl"] .langs { right: auto; left: 16px; }
+  html[dir="rtl"] .langs ul { right: auto; left: 0; }
   .panel {
     top: auto; left: 0; width: auto; height: 62vh;
     border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0;
@@ -389,6 +411,17 @@ body.panel-open .scene-disclaimer { opacity: 0; }
   #close .long { display: none; }
   .scene-disclaimer { font-size: .66rem; }
 }
+/* translated pages: longer section names, so the panel title is set a little tighter */
+html:not([lang|="en"]) .panel-kicker { letter-spacing: .03em; }
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) { html:not([lang|="en"]) .panel-kicker { font-size: 1.15rem; } html:not([lang|="en"]) .chip.arrow { min-width: 2rem; } html:not([lang|="en"]) .sections a { font-size: 1.02rem; padding: .25rem .26rem; } }
+@media (max-width: 340px) { html:not([lang|="en"]) .panel-kicker { font-size: 1.05rem; } }
+/* translated pages on phones: longer words, so slightly tighter menu buttons and panel head */
+@media (max-width: 440px) and (max-aspect-ratio: 1/1) {
+  html:not([lang|="en"]) .touch-menu a { font-size: 1.2rem; letter-spacing: .02em; padding-left: .65rem; padding-right: .65rem; }
+  html:not([lang|="en"]) .panel-head { gap: .5rem; padding-left: 14px; padding-right: 14px; }
+  html:not([lang|="en"]) .panel-kicker { font-size: 1.15rem; }
+  html:not([lang|="en"]) .chip.arrow { min-width: 2rem; }
+}
 /* very small phones (320 px wide): compact buttons so the menu, the note and the chips fit on one screen */
 @media (max-width: 340px) and (max-aspect-ratio: 1/1) {
   .touch-menu a { font-size: 1.15rem; letter-spacing: 0; padding: .4rem .55rem .34rem; }
@@ -399,6 +432,17 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 }
 /* narrower desktop windows: the short Back label leaves room for the section title */
 @media (max-width: 1140px) { #close .long { display: none; } }
+/* Arabic: right to left. Letter spacing breaks the joined script; bars and washes mirror */
+html[dir="rtl"] * { letter-spacing: 0 !important; }
+html[dir="rtl"] .timeline ul { padding-left: 0; padding-right: 1.1rem; }
+html[dir="rtl"] :is(.timeline, .plain) > li::before { left: auto; right: -14px; }
+html[dir="rtl"] :is(.timeline, .plain) > li::after { left: -10px; right: -14px; background: linear-gradient(270deg, color-mix(in srgb, var(--hl, var(--screen)) 13%, transparent), transparent 75%); }
+html[dir="rtl"] :is(.posts a, .lab > li .body, .cards > li)::before { left: auto; right: -1px; border-radius: 2px 0 0 2px; }
+html[dir="rtl"] :is(.posts a, .lab > li .body, .cards > li)::after { background: linear-gradient(270deg, color-mix(in srgb, var(--hl, var(--screen)) 11%, transparent), transparent 70%); }
+html[dir="rtl"] .xp-icon { float: left; margin: .1rem .7rem .4rem 0; }
+html[dir="rtl"] .chip.arrow { transform: scaleX(-1); }
+html[dir="rtl"] .xp-views .chip i { margin-right: 0; margin-left: .4rem; }
+html[dir="rtl"] .xp-stage canvas { direction: ltr; }
 @media (prefers-reduced-motion: reduce) {
   .panel, .intro, .tip, .touch-menu { transition: none; }
   .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev { animation: none; }
