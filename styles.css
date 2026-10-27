@@ -102,7 +102,7 @@ html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, htm
 /* writing: featured posts and article pages */
 .posts { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .9rem; }
 .posts a { display: block; height: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 1.1rem; color: var(--text); text-decoration: none; }
-.posts a:hover { border-color: var(--paper); }
+.posts a { transition: border-color .3s; }
 .posts p { color: var(--muted); margin: .45rem 0 .7rem; font-size: .95rem; }
 .posts .more { font-family: "VT323", ui-monospace, monospace; font-size: 1.1rem; color: var(--lamp); letter-spacing: .04em; }
 .panel-section .posts { grid-template-columns: 1fr; }
@@ -231,7 +231,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .cards li.xp-card:not(.xp-in) { opacity: 0; }
 .cards li.xp-card.xp-in { animation: xpRise .6s cubic-bezier(.2, .7, .2, 1) var(--d, 0ms) both; }
 @keyframes xpRise { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
-.cards li.xp-card:hover { border-color: var(--hl); transform: translateY(-2px); box-shadow: 0 8px 22px color-mix(in srgb, var(--hl) 14%, transparent); }
+.cards li.xp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px color-mix(in srgb, var(--hl) 14%, transparent); }
 .xp-icon { float: right; margin: .1rem 0 .4rem .7rem; image-rendering: pixelated; }
 
 .timeline { list-style: none; padding: 0; margin: 0; }
@@ -274,11 +274,31 @@ body.panel-open .scene-disclaimer { opacity: 0; }
   opacity: 0; transition: opacity .3s;
 }
 .plain > li::after { top: -.35rem; bottom: -.35rem; }
-.timeline > li.xp-on::before, .plain > li.xp-on::before { transform: scaleY(1); }
-.timeline > li.xp-on::after, .plain > li.xp-on::after { opacity: 1; }
+:is(.timeline, .plain) > li:is(.xp-on, :hover, :focus-within)::before { transform: scaleY(1); }
+:is(.timeline, .plain) > li:is(.xp-on, :hover, :focus-within)::after { opacity: 1; }
 .timeline > li .when, .plain > li .kw, .timeline > li h3, .plain > li h3 { transition: color .25s; }
-.timeline > li.xp-on .when, .plain > li.xp-on .kw { color: var(--hl, var(--screen)); }
-.timeline > li.xp-on h3 { color: #fff; }
+.timeline > li:is(.xp-on, :hover, :focus-within) .when, .plain > li:is(.xp-on, :hover, :focus-within) .kw { color: var(--hl, var(--screen)); }
+.timeline > li:is(.xp-on, :hover, :focus-within) h3, .plain > li:is(.xp-on, :hover, :focus-within) h3 { color: #fff; }
+/* the same highlight on the boxed cards of Areas of expertise, Writing and Lab: a bar inside the left edge and a wash */
+.posts a, .lab > li .body, .cards > li { position: relative; isolation: isolate; }
+.posts a { --hl: var(--lamp); }
+.lab > li { --hl: var(--screen); transition: border-color .3s; }
+.posts a::before, .lab > li .body::before, .cards > li::before {
+  content: ""; position: absolute; z-index: 1; left: -1px; top: 14px; bottom: 14px; width: 3px; border-radius: 0 2px 2px 0;
+  background: var(--hl, var(--screen)); box-shadow: 0 0 10px var(--hl, var(--screen));
+  transform: scaleY(0); transform-origin: top; transition: transform .35s cubic-bezier(.2, .7, .2, 1);
+}
+.posts a::after, .lab > li .body::after, .cards > li::after {
+  content: ""; position: absolute; z-index: -1; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--hl, var(--screen)) 11%, transparent), transparent 70%);
+  opacity: 0; transition: opacity .3s;
+}
+.posts a:is(:hover, :focus-visible)::before, .lab > li:is(:hover, :focus-within) .body::before, .cards > li:is(:hover, :focus-within)::before { transform: scaleY(1); }
+.posts a:is(:hover, :focus-visible)::after, .lab > li:is(:hover, :focus-within) .body::after, .cards > li:is(:hover, :focus-within)::after { opacity: 1; }
+.posts a:is(:hover, :focus-visible), .lab > li:is(:hover, :focus-within), .cards > li:is(:hover, :focus-within) { border-color: var(--hl, var(--screen)); }
+.posts a .kw, .lab .kw, .cards .kw, .posts a h3, .lab h3, .cards h3 { transition: color .25s; }
+.posts a:is(:hover, :focus-visible) .kw, .lab > li:is(:hover, :focus-within) .kw, .cards > li:is(:hover, :focus-within) .kw { color: var(--hl, var(--screen)); }
+.posts a:is(:hover, :focus-visible) h3, .lab > li:is(:hover, :focus-within) h3, .cards > li:is(:hover, :focus-within) h3 { color: #fff; }
 .timeline > li.xp-flash::after, .plain > li.xp-flash::after { animation: xpFlash 1.4s ease-out; }
 @keyframes xpFlash { 0% { opacity: 1; filter: brightness(2.2); } 100% { opacity: 0; filter: none; } }
 /* About: phrases linked to the dot tiles, with a highlighter sweep */
@@ -384,6 +404,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
   .intro-hint::after, .panel-body.slide-next, .panel-body.slide-prev { animation: none; }
   .cards li.xp-card.xp-in { animation: none; }
   .cards li.xp-card { transition: none; }
-  .xp-tip, .xp-mark, .xp-tile, .timeline > li::before, .timeline > li::after, .plain > li::before, .plain > li::after { transition: none; }
+  .xp-tip, .xp-mark, .xp-tile, .timeline > li::before, .timeline > li::after, .plain > li::before, .plain > li::after,
+  .posts a::before, .posts a::after, .lab > li .body::before, .lab > li .body::after, .cards > li::before, .cards > li::after { transition: none; }
   .timeline > li.xp-flash::after, .plain > li.xp-flash::after { animation: none; }
 }
