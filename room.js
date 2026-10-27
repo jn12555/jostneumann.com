@@ -144,7 +144,8 @@ const SPOTS = [
   { id: 'writing', label: 'Writing', n: '03', x: 68, y: 144, w: 46, h: 13, line: '>WRITING' }
 ];
 const HAS_LAB = !!document.getElementById('lab');   // the Lab section is a draft; the build leaves it out until it is approved
-const NAV_ONLY = HAS_LAB ? [{ id: 'lab', label: 'Lab', n: '06', at: 'about' }] : [];   // panels without an object of their own; the camera turns to `at`
+const NAV_ONLY = [];   // panels without an object of their own ({ id, label, n, at }); the camera turns to `at`
+if (HAS_LAB) SPOTS.push({ id: 'lab', label: 'Lab', n: '06', x: 35, y: 128, w: 22, h: 21, line: '>LAB' });   // the flask on the desk
 const SOURCES = { about: ['about', 'expertise'], experience: ['experience', 'education'], contact: ['contact'], writing: ['writing'], resources: ['resources'] };
 if (HAS_LAB) SOURCES.lab = ['lab'];
 
@@ -724,7 +725,14 @@ function drawDesk(c) {
   r(c, 0, 146, W, 1, '#d8ae80');
   r(c, 0, 156, W, 3, '#a47a52'); r(c, 0, 156, W, 1, '#e0b88a'); r(c, 0, 158, W, 1, '#6a4a30');
   // shadows on the desk
-  for (const [x, w] of [[70, 42], [114, 14], [134, 116], [254, 18], [278, 14], [300, 64], [367, 20], [398, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
+  for (const [x, w] of [[36, 20], [70, 42], [114, 14], [134, 116], [254, 18], [278, 14], [300, 64], [367, 20], [398, 24]]) r(c, x, 150, w, 2, 'rgba(40,20,10,.3)');
+  // a glass lab flask with teal liquid and a cork, at the left end of the desk (it opens the Lab)
+  r(c, 53, 139, 3, 10, 'rgba(20,12,8,.2)');                                          // its shadow
+  poly(c, [[43.5, 131], [48.5, 131], [48.5, 139], [55, 148], [37, 148], [43.5, 139]], '#a9c4c9');   // the glass
+  poly(c, [[41.3, 142], [50.7, 142], [55, 148], [37, 148]], '#36b0a0'); r(c, 41.3, 142, 9.4, 1, '#6fd8c8');   // the liquid and its surface
+  strokePath(c, [[43.5, 131], [43.5, 139], [37, 148], [55, 148], [48.5, 139], [48.5, 131]], '#4f6a70');
+  strokePath(c, [[44.8, 133], [44.8, 139], [40.6, 145.4]], '#eef7f8');               // a highlight on the glass
+  r(c, 43, 128.5, 6, 2.5, '#a0784a'); r(c, 43, 128.5, 6, 1, '#c09868');               // the cork
   c.save(); c.translate(-60, 0);                                                    // lamp: right of the screen
   // minimal desk lamp on the right: black stem, arm and a small head over the phone
   ell(c, 344, 149, 6, 1.6, '#2a2a2e'); r(c, 338, 149, 13, 1, '#18181c');
@@ -896,6 +904,9 @@ function drawEmissive(c, t, hover) {
     for (let i = 0; qy + 2 + i * 3 + 2 <= qy + qh; i++) r(c, i % 2 ? qx + qw - 6 : qx + 1, qy + 2 + i * 3, i % 2 ? 5 : 6, 2, i % 2 ? '#4fa898' : '#3a4656');
     if (reduce || Math.floor(t * 1.5) % 2 === 0) { r(c, qx + qw - 1, qy, 1, 1, '#7ff5d2'); glow(c, qx + qw - 1, qy, 4, '#7ff5d2', .5); }
     c.globalCompositeOperation = 'lighter'; glow(c, qx + qw / 2, qy + qh / 2, 12, '#6ab8d0', .1); c.globalCompositeOperation = 'source-over'; }
+  // bubbles rising in the flask, and a faint glow from it at night
+  for (let i = 0; i < 3; i++) { const ph = reduce ? .4 + i * .2 : (t * .55 + i / 3) % 1; r(c, 46 + Math.sin(ph * 9 + i * 2) * (2 + ph * 1.5), 147 - ph * 5, 1, 1, `rgba(224,255,246,${.85 - ph * .5})`); }
+  if (ENV.lamp > .05) { c.globalCompositeOperation = 'lighter'; glow(c, 46, 145, 10, '#5fe0c8', .14 * ENV.lamp); c.globalCompositeOperation = 'source-over'; }
   // steam over the mug
   if (!reduce) for (let i = 0; i < 4; i++) {
     const ph = (t * .45 + i / 4) % 1;
@@ -988,7 +999,7 @@ const STILL_GEO = {
     clock: { x: 356.5, y: 33, h: 4.5, m: 7, s: 7.5, cover: 7.5, face: '#ebe2d0' }, shadows: false
   },
   mon: { x: 205, w: 87, cy: 95.7, h0: 41, k: .05 },
-  spots: { about: [202, 72, 93, 77], experience: [240, 18, 96, 47], cv: [159, 106, 39, 36], contact: [295, 110, 22, 30], writing: [56, 132, 47, 20] , resources: [56, 132, 47, 20]}
+  spots: { about: [202, 72, 93, 77], experience: [240, 18, 96, 47], cv: [159, 106, 39, 36], contact: [295, 110, 22, 30], writing: [56, 132, 47, 20] , resources: [56, 132, 47, 20], lab: [20, 128, 22, 21]}
 };
 if (QS.get('still') === '1') {
   const img = new Image();
