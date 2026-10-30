@@ -264,8 +264,6 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 .xp-views { display: flex; flex-wrap: wrap; gap: .35rem; }
 .xp-views .chip { font-size: 1rem; padding: .32rem .65rem .28rem; }
 .xp-views .chip[aria-pressed="true"] { background: var(--paper); color: #1a1410; border-color: var(--paper); }
-.xp-views .chip i { display: inline-block; width: .5rem; height: .5rem; margin-right: .4rem; background: var(--c); vertical-align: .05rem; }
-.xp-hide { display: none !important; }
 .xp-stage { position: relative; }
 .xp-stage canvas { display: block; width: 100%; touch-action: pan-y; }
 .xp-tip {
@@ -441,7 +439,6 @@ html[dir="rtl"] :is(.posts a, .lab > li .body, .cards > li)::before { left: auto
 html[dir="rtl"] :is(.posts a, .lab > li .body, .cards > li)::after { background: linear-gradient(270deg, color-mix(in srgb, var(--hl, var(--screen)) 11%, transparent), transparent 70%); }
 html[dir="rtl"] .xp-icon { float: left; margin: .1rem .7rem .4rem 0; }
 html[dir="rtl"] .chip.arrow { transform: scaleX(-1); }
-html[dir="rtl"] .xp-views .chip i { margin-right: 0; margin-left: .4rem; }
 html[dir="rtl"] .xp-stage canvas { direction: ltr; }
 @media (prefers-reduced-motion: reduce) {
   .panel, .intro, .tip, .touch-menu { transition: none; }

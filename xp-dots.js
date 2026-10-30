@@ -1,10 +1,10 @@
-// Data dots for the About, Areas of expertise, Experience and Resources sections (Personal Website). A classic script: it sets window.XPDOTS.
-// mount(root) looks inside root for the experience timeline and the resources lists and puts a small dot chart above
-// each. Experience: one dot per month of work, coloured by sector, by year (a calendar grid, with the advisory roles,
-// degrees and certifications of each year under it) or by sector (rows with the years per sector). Resources: one dot
-// per publication, talk or media item, dropped into its year, with filters that also filter the list. Hovering or
-// tapping a dot lights up its entry in the list, and the other way round. drawScreen() paints a pixel copy of the open
-// chart on the desk screen in the room (room.js). All data are read from the lists on the page, which stay the only source.
+// Data dots for the About, Areas of expertise and Experience sections (Personal Website). A classic script: it sets
+// window.XPDOTS. mount(root) looks inside root for the About text, the expertise cards and the experience timeline.
+// Experience: one dot per month of work, coloured by sector, by year (a calendar grid, with the advisory roles, degrees
+// and certifications of each year under it) or by sector (rows with the years per sector). Hovering or tapping a dot
+// lights up its entry in the list, and the other way round. drawScreen() paints a pixel copy of the chart on the desk
+// screen in the room (room.js). All data are read from the page, which stays the only source. (The Resources chart was
+// removed on 30 October 2026: too few items to chart.)
 (function () {
   const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
   const SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -15,15 +15,9 @@
     { id: 'priv', label: 'Private sector', color: '#9ad57f', test: /Agri|Holding/i },
     { id: 'res', label: 'Research', color: '#c3b2f2', test: /./ },
   ];
-  const GROUPS = [   // resources, matched against the heading above each list
-    { id: 'pub', label: 'Publications', color: '#ffe7a8', test: /publication/i },
-    { id: 'talk', label: 'Talks', color: '#7ff5d2', test: /talk|panel/i },
-    { id: 'media', label: 'Media', color: '#c3a6ff', test: /media|coverage/i },
-  ];
   const GHOST = '#2a2430', ADV = '#e8ddc8', EDU = '#ffe7a8', CERT = '#7ff5d2';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ease = p => 1 - Math.pow(1 - p, 3);
-  const drop = p => { const n = 7.5625, d = 2.75; return p < 1 / d ? n * p * p : p < 2 / d ? n * (p -= 1.5 / d) * p + .75 : p < 2.5 / d ? n * (p -= 2.25 / d) * p + .9375 : n * (p -= 2.625 / d) * p + .984375; };   // a small bounce on landing
   const esc = s => s.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
   const nowMonth = () => { const d = new Date(); return d.getFullYear() * 12 + d.getMonth(); };
   const STATE = {};   // what the desk screen shows: the chart in the open panel
@@ -286,131 +280,6 @@
     kick();
   }
 
-  // ---------- Resources ----------
-  function mountResources(root) {
-    const li0 = [...root.querySelectorAll('ul.plain > li')].find(li => li.querySelector('.kw')); if (!li0) return;
-    const sec = li0.closest('section'); if (!sec) return;
-    const old = sec.querySelector('.xp-viz'); if (old) old.remove();
-    const items = [], groupsSeen = [];
-    sec.querySelectorAll('h2.sub').forEach((h, gi) => {
-      // Publications, Talks and panels, Media and coverage, in this order on every page
-      const g = GROUPS.find(q => q.test.test(h.textContent)) || GROUPS[gi]; let ul = h.nextElementSibling; while (ul && ul.tagName !== 'UL') ul = ul.nextElementSibling;
-      if (!g || !ul) return;
-      groupsSeen.push({ g, h, ul });
-      [...ul.children].forEach(li => {
-        const a = li.querySelector('h3'), org = li.querySelector('.org'); if (!a || !org) return;
-        const m = org.textContent.match(/(?:(\p{L}+)\s+(?:de\s+)?)?((?:19|20)\d{2})/u); if (!m) return;
-        const mi = m[1] ? monthOf(m[1]) : -1;
-        items.push({ li, g, title: a.textContent.trim(), org: org.textContent.trim(), year: +m[2], when: +m[2] * 12 + Math.max(0, mi) });
-      });
-    });
-    if (!items.length) return;
-    items.sort((a, b) => a.when - b.when).forEach((it, i) => Object.assign(it, { i, x: 0, y: 0, sx: 0, sy: 0, tx: 0, ty: 0, t0: 0, a: 0, ta: 1 }));
-    items.forEach(it => it.li.style.setProperty('--hl', it.g.color));
-    const ry0 = Math.min(...items.map(i => i.year)), ry1 = Math.max(...items.map(i => i.year));
-    const groups = GROUPS.filter(g => items.some(i => i.g === g)), gLabel = g => T('grp_' + g.id, g.label);
-
-    const chips = `<button type="button" class="chip" data-filter="all" aria-pressed="true">${T('all', 'All')}</button>` +
-      groups.map(g => `<button type="button" class="chip" data-filter="${g.id}" aria-pressed="false" style="--c:${g.color}"><i></i>${gLabel(g)}</button>`).join('');
-    const fig = figure(T('rsKicker', 'Resources in data dots'), chips,
-      T('rsCaption', 'Each dot is one publication, talk or media item, placed by year and coloured by type. The buttons filter the list below; hover over or tap a dot for the title, and select it to go to the item.'), T('filterLabel', 'Filter'));
-    fig.dataset.kind = 'resources';
-    sec.insertBefore(fig, groupsSeen[0].h);
-    const cv = fig.querySelector('canvas'), tip = fig.querySelector('.xp-tip'), stage = fig.querySelector('.xp-stage'), c = cv.getContext('2d');
-    cv.setAttribute('aria-label', T('rsAria', 'Dot chart of {n} resources by year, {y0} to {y1}: {list}.', { n: items.length, y0: ry0, y1: ry1, list: groups.map(g => `${items.filter(i => i.g === g).length} ${/^de/.test(document.documentElement.lang) ? gLabel(g) : gLabel(g).toLowerCase()}`).join(', ') }));   // German nouns keep their capital
-
-    let filter = 'all', hover = null, W = 0, H = 0, D = 12, LAY = null;
-    const st = { fig, get filter() { return filter; }, get hover() { return hover; }, items, y0: ry0, y1: ry1 };
-    if (own(root, fig)) STATE.resources = st;
-    const shown = it => filter === 'all' || it.g.id === filter;
-
-    function layout() {
-      W = Math.max(240, Math.round(stage.clientWidth));
-      const n = ry1 - ry0 + 1, colW = W / n, maxStack = Math.max(...Array.from({ length: n }, (_, k) => items.filter(i => i.year === ry0 + k).length));
-      D = Math.round(Math.max(8, Math.min(16, colW * .42)));
-      const pitch = D + 4, base = 14 + maxStack * pitch;
-      H = base + 24;
-      LAY = { colW, pitch, base, cols: Array.from({ length: n }, (_, k) => ({ year: ry0 + k, cx: colW * (k + .5) })) };
-      sizeCanvas(cv, c, W, H);
-    }
-    function targets(stagger, fromTop) {
-      const at = performance.now(), stack = {};
-      for (const it of items) {
-        const col = LAY.cols[it.year - ry0], k = shown(it) ? (stack[it.year] = (stack[it.year] || 0) + 1) - 1 : -1;
-        it.sx = fromTop ? col.cx - D / 2 : it.x; it.sy = fromTop ? -D - 6 - it.i * 4 : it.y;
-        it.tx = col.cx - D / 2; it.ty = k >= 0 ? LAY.base - D - k * LAY.pitch : LAY.base - D;   // filtered-out dots sink to the floor and fade
-        it.ta = k >= 0 ? 1 : 0; it.t0 = reduce ? at - 1e4 : at + (stagger ? it.i * stagger : 0); it.fall = !!fromTop;
-      }
-    }
-    const DUR = 650;
-    function step(ts) {
-      let moving = false;
-      for (const it of items) {
-        const p = Math.min(1, Math.max(0, (ts - it.t0) / (it.fall ? 900 : DUR)));
-        if (p < 1) moving = true;
-        const e = it.fall ? drop(p) : ease(p);
-        it.x = it.sx + (it.tx - it.sx) * e; it.y = it.sy + (it.ty - it.sy) * e;
-        const da = it.ta - it.a; if (Math.abs(da) > .01) { it.a += reduce ? da : Math.sign(da) * Math.min(Math.abs(da), .1); moving = true; } else it.a = it.ta;
-        if (it.fall && p > 0 && it.ta) it.a = Math.max(it.a, Math.min(1, p * 3));
-      }
-      return moving;
-    }
-    function draw(ts) {
-      c.clearRect(0, 0, W, H);
-      const t = ts / 1000;
-      c.fillStyle = GHOST; c.fillRect(0, LAY.base + 1, W, 1);
-      c.font = '14px ' + PIXEL; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-      for (const col of LAY.cols) {
-        const n = items.filter(i => i.year === col.year && shown(i)).length;
-        c.fillStyle = '#8a8078'; c.fillText(String(col.year), col.cx, LAY.base + 17);
-        if (n) { c.fillStyle = '#5f5866'; c.fillText(String(n), col.cx, LAY.base - D - (n - 1) * LAY.pitch - 5); }
-      }
-      for (const it of items) {
-        if (it.a <= .01) continue;
-        const on = !hover || hover === it, tw = !reduce && !hover && Math.sin(t * 1.1 + it.i * 2.399) > .995;
-        c.globalAlpha = it.a * (on ? 1 : .25);
-        c.fillStyle = tw ? '#fff6dc' : it.g.color;
-        const g = hover === it ? 2 : 0;
-        c.fillRect(Math.round(it.x) - g, Math.round(it.y) - g, D + 2 * g, D + 2 * g);
-      }
-      c.globalAlpha = 1;
-    }
-    function pick(e) {
-      const b = cv.getBoundingClientRect(), x = e.clientX - b.left, y = e.clientY - b.top;
-      const it = items.find(i => i.a > .5 && x >= i.x - 3 && x <= i.x + D + 3 && y >= i.y - 3 && y <= i.y + D + 3);
-      return { it, x, y };
-    }
-    const html = it => `<b>${esc(it.title)}</b><span>${esc(it.org.length > 120 ? it.org.slice(0, 117) + '…' : it.org)}</span>`;
-    function setHover(it, at) {
-      hover = it || null;
-      items.forEach(i => i.li.classList.toggle('xp-on', i === hover));
-      showTip(tip, it && at ? html(it) : null, at, W);
-      cv.style.cursor = it ? 'pointer' : '';
-      kick();
-    }
-    cv.addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; const h = pick(e); if ((h.it || null) !== hover) setHover(h.it, h); });
-    cv.addEventListener('pointerleave', () => setHover(null));
-    cv.addEventListener('click', e => {
-      const h = pick(e); if (!h.it) { setHover(null); return; }
-      if (isTouch(e) && hover !== h.it) { setHover(h.it, h); return; }
-      flash(h.it.li);
-    });
-    items.forEach(it => { it.li.addEventListener('mouseenter', () => setHover(it)); it.li.addEventListener('mouseleave', () => setHover(null)); });
-    fig.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => {
-      if (filter === b.dataset.filter) return;
-      filter = b.dataset.filter;
-      fig.querySelectorAll('[data-filter]').forEach(q => q.setAttribute('aria-pressed', String(q === b)));
-      groupsSeen.forEach(({ g, h, ul }) => { const off = filter !== 'all' && g.id !== filter; h.classList.toggle('xp-hide', off); ul.classList.toggle('xp-hide', off); });
-      setHover(null); targets(25, false); kick();
-    }));
-
-    // start: the dots fall into their years like rain, oldest first
-    layout();
-    targets(reduce ? 0 : 90, !reduce);
-    const kick = loop(cv, stage, () => { layout(); targets(0, false); items.forEach(i => { i.t0 = 0; i.fall = false; }); }, ts => { const moving = step(ts); draw(ts); return moving || !!hover; });
-    kick();
-  }
-
   // ---------- About ----------
   // the figures in the About text as dot tiles; each tile is linked to its phrase in the text, which gets a highlighter sweep
   function wrapPhrase(prose, phrase, key) {
@@ -551,37 +420,29 @@
           top += Math.ceil(q.months / per) * 3 + 1;
         }
       }
-    } else {
-      const n = s.y1 - s.y0 + 1, px = Math.floor(w / n), ox = X + Math.floor((w - n * px) / 2 + px / 2) - 1, stack = {}, base = Y + h - 3;
-      for (const it of s.items) {
-        if (!(s.filter === 'all' || it.g.id === s.filter)) continue;
-        const k = (stack[it.year] = (stack[it.year] || 0) + 1) - 1;
-        out.push([it, ox + (it.year - s.y0) * px, base - k * 4]);
-      }
-      g.fillStyle = 'rgba(232,236,244,.18)'; g.fillRect(X, base + 3, w, 1);
     }
-    const dt = Math.min(.5, Math.max(0, t - (mem.t || t))), hv = s.hover, k = reduce ? 1 : 1 - Math.exp(-dt * 7), sz = kind === 'experience' ? 2 : 3;   // eased by time, so slow devices arrive as fast
+    const dt = Math.min(.5, Math.max(0, t - (mem.t || t))), hv = s.hover, k = reduce ? 1 : 1 - Math.exp(-dt * 7), sz = 2;   // eased by time, so slow devices arrive as fast
     mem.t = t;
     const live = new Set();
     for (const [d, tx, ty] of out) {
       live.add(d);
       let p = mem.pts.get(d); if (!p) { p = { x: X + Math.random() * w, y: Y + Math.random() * h }; mem.pts.set(d, p); }
       p.x += (tx - p.x) * k; p.y += (ty - p.y) * k;
-      const on = !hv || (kind === 'experience' ? (hv.role ? d.role === hv.role : hv.sector ? d.role.sector === hv.sector : false) : hv === d);
-      const blink = kind === 'experience' && d.n === s.now && !reduce && Math.floor(t * 1.6) % 2 === 0;
+      const on = !hv || (hv.role ? d.role === hv.role : hv.sector ? d.role.sector === hv.sector : false);
+      const blink = d.n === s.now && !reduce && Math.floor(t * 1.6) % 2 === 0;
       g.globalAlpha = (on ? 1 : .25) * (blink ? .3 : 1);
-      g.fillStyle = kind === 'experience' ? d.role.sector.color : d.g.color;
+      g.fillStyle = d.role.sector.color;
       g.fillRect(Math.round(p.x), Math.round(p.y), sz, sz);
     }
-    for (const d of [...mem.pts.keys()]) if (!live.has(d)) mem.pts.delete(d);   // filtered out: they come back from elsewhere
+    for (const d of [...mem.pts.keys()]) if (!live.has(d)) mem.pts.delete(d);
     g.globalAlpha = 1;
     return true;
   }
   const has = kind => !!(STATE[kind] && STATE[kind].fig.isConnected && STATE[kind].fig.closest('.panel'));
 
-  function mount(root) { if (!root) return; mountAbout(root); mountExpertise(root); mountExperience(root); mountResources(root); }
+  function mount(root) { if (!root) return; mountAbout(root); mountExpertise(root); mountExperience(root); }
   window.XPDOTS = { mount, drawScreen, has };
   // the text version (and the page without the scene) shows the sections themselves
-  const init = () => ['about', 'expertise', 'experience', 'resources'].forEach(id => { const s = document.getElementById(id); if (s) mount(s); });
+  const init = () => ['about', 'expertise', 'experience'].forEach(id => { const s = document.getElementById(id); if (s) mount(s); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

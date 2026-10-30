@@ -942,8 +942,8 @@ function drawDesktop(g, t, hover) {
   // menu bar with a clock
   g.fillStyle = 'rgba(12,14,20,.6)'; g.fillRect(0, 0, SW, 2);
   r(g, 2, 0, 1, 1, '#e8ecf4'); r(g, SW - 15, 0, 12, 1, '#e8ecf4');
-  // with Experience or Resources open, a window with a pixel copy of the panel's dot chart (xp-dots.js)
-  if (window.XPDOTS && (openId === 'experience' || openId === 'resources') && XPDOTS.has(openId)) {
+  // with Experience open, a window with a pixel copy of the panel's dot chart (xp-dots.js)
+  if (window.XPDOTS && openId === 'experience' && XPDOTS.has(openId)) {
     const x0 = 4, y0 = 2, w = SW - 8, h = SH - 6;
     r(g, x0 + 1, y0 + 1, w, h, 'rgba(0,0,0,.35)'); r(g, x0, y0, w, h, '#141a22'); r(g, x0, y0, w, 2, '#232c38');
     r(g, x0 + 2, y0, 1, 1, '#ff5f57'); r(g, x0 + 4, y0, 1, 1, '#febc2e'); r(g, x0 + 6, y0, 1, 1, '#28c840');
@@ -1258,7 +1258,7 @@ function panelBox() { return portrait ? { w: vw, h: vh * .62 } : { w: Math.min(5
 function aim(id) {
   const nav = NAV_ONLY.find(q => q.id === id), pb = panelBox();
   let s = SPOTS.find(q => q.id === (nav ? nav.at : id)), fit = .55;
-  const m = window.XPDOTS && (id === 'experience' || id === 'resources') ? SPOTS.find(q => q.id === 'about') : null;
+  const m = window.XPDOTS && id === 'experience' ? SPOTS.find(q => q.id === 'about') : null;
   if (m) {   // the screen shows their dot chart, so keep it in view with the object
     const x = Math.min(s.x, m.x), y = Math.min(s.y, m.y);
     s = { x, y, w: Math.max(s.x + s.w, m.x + m.w) - x, h: Math.max(s.y + s.h, m.y + m.h) - y }; fit = .9;
