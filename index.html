@@ -36,7 +36,7 @@
     try { if (localStorage.getItem('jn-mode') === 'lofi') document.documentElement.classList.add('lofi'); } catch (e) {}
   </script>
   <link rel="stylesheet" href="assets/fonts/fonts.css">
-  <link rel="stylesheet" href="styles.css?v=2026-10-30">
+  <link rel="stylesheet" href="styles.css?v=2026-11-07d">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23120f16'/%3E%3Crect x='3' y='4' width='10' height='7' fill='%23d3c8ae'/%3E%3Crect x='4' y='5' width='8' height='5' fill='%2310201c'/%3E%3Crect x='5' y='7' width='4' height='1' fill='%237ff5d2'/%3E%3Crect x='6' y='11' width='4' height='2' fill='%23bfb398'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -58,6 +58,11 @@
   <div class="scene" id="scene">
     <canvas id="room" role="img" aria-label="Pixel-art illustration of a timber cabin office in the forest. A floor-to-ceiling glass wall looks out on a quiet forest river, meadows and a mountain panorama; the light follows the local time of day. A framed print hangs on the left wall. On a minimal desk, the curved screen, the books, the notebook, the file holder, the phone and a glass flask open the sections of this page."></canvas>
     <div class="tip" id="tip" aria-hidden="true"></div>
+    <div class="intro" id="intro">
+      <p class="intro-role">Funding, evidence and tools for people, places and nature.</p>
+      <p class="intro-tags"><span>Approx. EUR 40 million investment overseen</span><span>More than EUR 12 million mobilized</span></p>
+      <p class="intro-note">TUI Care Foundation, 2018–2025</p>
+    </div>
     <nav class="touch-menu" aria-label="Sections">
       <a href="#about" data-go="about"><b>01</b> About</a>
       <a href="#experience" data-go="experience"><b>02</b> Experience</a>
@@ -108,8 +113,8 @@
     <section id="about" class="wrap section">
       <h2>About</h2>
       <div class="prose">
-        <p>Jost Neumann is based in Riyadh, Saudi Arabia, and coordinates the Tourism for Rural Development Programme of UN Tourism, the United Nations specialized agency for tourism. The role covers advocacy, advisory services and technical and financial assistance for Member States, the coordination of the Best Tourism Villages by UN Tourism (BTV) Network and the Tourism for Rural Development Small Grants Programme.</p>
-        <p>From 2018 to 2025, Jost Neumann held programme leadership roles at the TUI Care Foundation. As Director Programmes (2022–2025), Jost Neumann oversaw the investment of approximately EUR 40 million of philanthropic capital in destination projects on entrepreneurship, education and nature conservation and the mobilization of more than EUR 12 million from institutional donors. Several projects received awards, including the Responsible Tourism Award and the German Sustainability Award.</p>
+        <p>From 2018 to 2025, Jost Neumann held programme leadership roles at the TUI Care Foundation, as Head of Economic Development and then as Director Programmes. Over this period, Jost Neumann oversaw the investment of approximately EUR 40 million of philanthropic capital in destination projects on entrepreneurship, education and nature conservation and the mobilization of more than EUR 12 million from institutional donors. Several projects received awards, including the Responsible Tourism Award and the German Sustainability Award.</p>
+        <p>Jost Neumann is based in Riyadh, Saudi Arabia, and coordinates the Tourism for Rural Development Programme of UN Tourism.</p>
         <p>Earlier positions include economic recovery and communications roles at the International Rescue Committee, responsible investment in Eastern and Southern Africa, and strategy work at the Vodafone Institute. The work combines expertise in philanthropy, impact investing and innovative finance with field experience in South-East Asia, Africa and the Middle East.</p>
       </div>
     </section>
@@ -131,11 +136,12 @@
           <p class="when">March 2025 – present</p>
           <div>
             <h3>Programme Coordinator, Tourism for Rural Development Programme</h3>
-            <p class="org">UN Tourism · Riyadh, Saudi Arabia</p>
+            <p class="org">UN Tourism · Berlin, Germany, and Riyadh, Saudi Arabia (from June 2025)</p>
             <ul>
               <li>Coordinates the Tourism for Rural Development Small Grants Programme.</li>
               <li>Leads a multidisciplinary team of specialists providing advocacy, advisory services and technical and financial assistance to Member States across all world regions.</li>
               <li>Coordinates the Best Tourism Villages by UN Tourism (BTV) Network, including technical assistance and partnership development.</li>
+              <li>Developed the BTV Digital Explorer for the programme: a working tool based on open data, not public.</li>
             </ul>
           </div>
         </li>
@@ -145,7 +151,8 @@
             <h3>Director Programmes</h3>
             <p class="org">TUI Care Foundation · Berlin, Germany</p>
             <ul>
-              <li>Invested approximately EUR 40 million of philanthropic capital in destination projects on entrepreneurship, education and nature conservation.</li>
+              <li>Oversaw the investment of approximately EUR 40 million of philanthropic capital in destination projects on entrepreneurship, education and nature conservation from 2018 to 2025, across both foundation roles.</li>
+              <li>Oversaw the mobilization of more than EUR 12 million from institutional donors from 2018 to 2025.</li>
               <li>Oversaw a global grant portfolio spanning all world regions, with projects on nature conservation, entrepreneurship, education, cultural heritage and impact finance for businesses.</li>
               <li>Developed the programme strategy and the monitoring and evaluation framework of the foundation.</li>
               <li>Projects received the Responsible Tourism Award, the German Sustainability Award and the Responsible Travel Award, among others.</li>
@@ -156,7 +163,7 @@
           <p class="when">June 2018 – February 2022</p>
           <div>
             <h3>Head of Economic Development</h3>
-            <p class="org">TUI Care Foundation · Palma de Mallorca, Spain</p>
+            <p class="org">TUI Care Foundation · Palma de Mallorca, Spain, and Berlin, Germany (from 2020)</p>
             <ul>
               <li>Developed a portfolio of grant-funded projects on sustainable agriculture, adventure tourism, entrepreneurship and tourism development in low- and middle-income countries across world regions.</li>
             </ul>
@@ -260,20 +267,11 @@
       </ul>
     </section>
 
-    <!-- LAB:START (draft: tools/build.py leaves this out unless --with-lab) -->
+    <!-- LAB:START (published; tools/build.py --no-lab leaves this out) -->
     <section id="lab" class="wrap section">
       <h2>Lab</h2>
       <p class="muted">Small tools and experiments. They are personal projects: the ideas, design decisions, testing and final checks are Jost Neumann's own.</p>
       <ul class="lab">
-        <li>
-          <img src="assets/lab/explorer.jpg" alt="The opening screen of the BTV Digital Explorer: a dark map of dots, one per village, with the title An open data rural tourism explorer" loading="lazy" width="800" height="500">
-          <div class="body">
-            <p class="kw">Internal tool · Open data</p>
-            <h3>BTV Digital Explorer</h3>
-            <p>An internal working tool for exploring open data on the 236 Best Tourism Villages by UN Tourism (BTVs) in 57 countries. It brings together openly available datasets, many of them maintained by international organizations, on settlement type and population, access to towns and transport, and international recognitions such as UNESCO sites and protected areas. Its maps are designed to follow United Nations cartographic conventions.</p>
-            <span class="more">Internal working tool, not public</span>
-          </div>
-        </li>
         <li>
           <img src="assets/lab/samer.jpg" alt="The Samer start page: the headline Meet Samer, your speaking companion, beside a live teleprompter demo with a sample speech" loading="lazy" width="800" height="506">
           <div class="body">
@@ -298,12 +296,13 @@
 
     <section id="contact" class="wrap section">
       <h2>Contact</h2>
-      <p class="muted">For professional exchange, contact is welcome by email or through LinkedIn.</p>
+      <p class="muted">Exchange on programme design, financing and evidence is welcome by email or through LinkedIn.</p>
       <div class="actions">
         <!-- The address is assembled by script so that it is not readable by simple scrapers. -->
         <a class="btn primary" id="email-link" href="#contact" data-user="jost.neumann87" data-domain="googlemail.com">Send an email</a>
         <a class="btn" href="https://www.linkedin.com/in/jost-neumann05802853" target="_blank" rel="noopener">Connect on LinkedIn</a>
       </div>
+      <noscript><p class="muted">Email: jost.neumann87 [at] googlemail [dot] com</p></noscript>
       <p class="disclaimer">The views expressed on this site are personal and do not necessarily reflect those of any current or former employer.</p>
     </section>
 
@@ -315,8 +314,8 @@
   <script src="topo.js?v=2026-10-23"></script>
   <script src="lineart.js?v=2026-10-25b"></script>
   <script src="dots.js?v=2026-10-23"></script>
-  <script src="xp-dots.js?v=2026-10-30"></script>
-  <script src="room.js?v=2026-10-30"></script>
+  <script src="xp-dots.js?v=2026-11-07b"></script>
+  <script src="room.js?v=2026-11-07"></script>
   <script src="/analytics.js?v=2026-10-30" defer></script>
 </body>
 </html>

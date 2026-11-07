@@ -36,7 +36,7 @@
     try { if (localStorage.getItem('jn-mode') === 'lofi') document.documentElement.classList.add('lofi'); } catch (e) {}
   </script>
   <link rel="stylesheet" href="../assets/fonts/fonts.css">
-  <link rel="stylesheet" href="../styles.css?v=2026-10-30">
+  <link rel="stylesheet" href="../styles.css?v=2026-11-07d">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23120f16'/%3E%3Crect x='3' y='4' width='10' height='7' fill='%23d3c8ae'/%3E%3Crect x='4' y='5' width='8' height='5' fill='%2310201c'/%3E%3Crect x='5' y='7' width='4' height='1' fill='%237ff5d2'/%3E%3Crect x='6' y='11' width='4' height='2' fill='%23bfb398'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -58,6 +58,11 @@
   <div class="scene" id="scene">
     <canvas id="room" role="img" aria-label="Ilustración en pixel art de una oficina en una cabaña de madera en el bosque. Una pared de cristal de suelo a techo da a un tranquilo río en el bosque, prados y un panorama de montañas; la luz sigue la hora local del día. En la pared izquierda cuelga una lámina enmarcada. Sobre un escritorio minimalista, la pantalla curva, los libros, el cuaderno, el archivador, el teléfono y un matraz de vidrio abren las secciones de esta página."></canvas>
     <div class="tip" id="tip" aria-hidden="true"></div>
+    <div class="intro" id="intro">
+      <p class="intro-role">Financiación, datos empíricos y herramientas para las personas, los lugares y la naturaleza.</p>
+      <p class="intro-tags"><span>Aprox. 40 millones de euros de inversión supervisada</span><span>Más de 12 millones de euros movilizados</span></p>
+      <p class="intro-note">TUI Care Foundation, 2018–2025</p>
+    </div>
     <nav class="touch-menu" aria-label="Secciones">
       <a href="#about" data-go="about"><b>01</b> Perfil</a>
       <a href="#experience" data-go="experience"><b>02</b> Experiencia</a>
@@ -108,8 +113,8 @@
     <section id="about" class="wrap section">
       <h2>Perfil</h2>
       <div class="prose">
-        <p>Jost Neumann reside en Riad (Arabia Saudita) y coordina el Programa de Turismo para el Desarrollo Rural de ONU Turismo, el organismo especializado de las Naciones Unidas para el turismo. La función abarca la promoción, los servicios de asesoramiento y la asistencia técnica y financiera a los Estados Miembros, la coordinación de la Red Best Tourism Villages by UN Tourism (BTV) y el Programa de Pequeñas Subvenciones de Turismo para el Desarrollo Rural.</p>
-        <p>De 2018 a 2025, Jost Neumann ocupó puestos de dirección de programas en la TUI Care Foundation. Como Director de Programas (2022–2025), Jost Neumann supervisó la inversión de aproximadamente 40 millones de euros de capital filantrópico en proyectos en destinos sobre emprendimiento, educación y conservación de la naturaleza, así como la movilización de más de 12 millones de euros procedentes de donantes institucionales. Varios proyectos recibieron premios, entre ellos el Responsible Tourism Award y el German Sustainability Award.</p>
+        <p>De 2018 a 2025, Jost Neumann ocupó puestos de dirección de programas en la TUI Care Foundation, primero como Jefe de Desarrollo Económico y después como Director de Programas. Durante ese período, Jost Neumann supervisó la inversión de aproximadamente 40 millones de euros de capital filantrópico en proyectos en destinos sobre emprendimiento, educación y conservación de la naturaleza, así como la movilización de más de 12 millones de euros procedentes de donantes institucionales. Varios proyectos recibieron premios, entre ellos el Responsible Tourism Award y el German Sustainability Award.</p>
+        <p>Jost Neumann tiene su base en Riad (Arabia Saudita) y coordina el Programa de Turismo para el Desarrollo Rural de ONU Turismo.</p>
         <p>Entre los puestos anteriores figuran funciones de recuperación económica y de comunicación en el International Rescue Committee, la inversión responsable en África Oriental y Meridional, y la labor de estrategia en el Vodafone Institute. El trabajo combina conocimientos especializados en filantropía, inversión de impacto y financiación innovadora con experiencia sobre el terreno en Asia Sudoriental, África y Oriente Medio.</p>
       </div>
     </section>
@@ -131,11 +136,12 @@
           <p class="when">marzo de 2025 – actualidad</p>
           <div>
             <h3>Coordinador del Programa de Turismo para el Desarrollo Rural</h3>
-            <p class="org">ONU Turismo · Riad (Arabia Saudita)</p>
+            <p class="org">ONU Turismo · Berlín (Alemania) y Riad (Arabia Saudita, desde junio de 2025)</p>
             <ul>
               <li>Coordina el Programa de Pequeñas Subvenciones de Turismo para el Desarrollo Rural.</li>
               <li>Dirige un equipo multidisciplinario de especialistas que presta servicios de promoción, asesoramiento y asistencia técnica y financiera a los Estados Miembros de todas las regiones del mundo.</li>
               <li>Coordina la Red Best Tourism Villages by UN Tourism (BTV), incluidos la asistencia técnica y el desarrollo de alianzas.</li>
+              <li>Desarrolló para el Programa el BTV Digital Explorer, una herramienta de trabajo basada en datos abiertos (no pública).</li>
             </ul>
           </div>
         </li>
@@ -145,7 +151,8 @@
             <h3>Director de Programas</h3>
             <p class="org">TUI Care Foundation · Berlín (Alemania)</p>
             <ul>
-              <li>Invirtió aproximadamente 40 millones de euros de capital filantrópico en proyectos en destinos sobre emprendimiento, educación y conservación de la naturaleza.</li>
+              <li>Supervisó de 2018 a 2025, en ambos puestos en la fundación, la inversión de aproximadamente 40 millones de euros de capital filantrópico en proyectos en destinos sobre emprendimiento, educación y conservación de la naturaleza.</li>
+              <li>Supervisó de 2018 a 2025 la movilización de más de 12 millones de euros procedentes de donantes institucionales.</li>
               <li>Supervisó una cartera mundial de subvenciones en todas las regiones del mundo, con proyectos de conservación de la naturaleza, emprendimiento, educación, patrimonio cultural y financiación de impacto para empresas.</li>
               <li>Elaboró la estrategia de programas y el marco de seguimiento y evaluación de la fundación.</li>
               <li>Los proyectos recibieron, entre otros, el Responsible Tourism Award, el German Sustainability Award y el Responsible Travel Award.</li>
@@ -156,7 +163,7 @@
           <p class="when">junio de 2018 – febrero de 2022</p>
           <div>
             <h3>Jefe de Desarrollo Económico</h3>
-            <p class="org">TUI Care Foundation · Palma de Mallorca (España)</p>
+            <p class="org">TUI Care Foundation · Palma de Mallorca (España) y Berlín (Alemania, desde 2020)</p>
             <ul>
               <li>Desarrolló una cartera de proyectos financiados mediante subvenciones sobre agricultura sostenible, turismo de aventura, emprendimiento y desarrollo turístico en países de ingreso bajo y mediano de distintas regiones del mundo.</li>
             </ul>
@@ -260,20 +267,11 @@
       </ul>
     </section>
 
-    <!-- LAB:START (draft: tools/build.py leaves this out unless --with-lab) -->
+    <!-- LAB:START (published; tools/build.py --no-lab leaves this out) -->
     <section id="lab" class="wrap section">
       <h2>Laboratorio</h2>
       <p class="muted">Pequeñas herramientas y experimentos. Se trata de proyectos personales: las ideas, las decisiones de diseño, las pruebas y las verificaciones finales son obra del propio Jost Neumann.</p>
       <ul class="lab">
-        <li>
-          <img src="../assets/lab/explorer.jpg" alt="La pantalla de inicio del BTV Digital Explorer: un mapa oscuro de puntos, uno por pueblo, con el título An open data rural tourism explorer" loading="lazy" width="800" height="500">
-          <div class="body">
-            <p class="kw">Herramienta interna · Datos abiertos</p>
-            <h3>BTV Digital Explorer</h3>
-            <p>Una herramienta interna de trabajo para explorar datos abiertos sobre los 236 Best Tourism Villages by UN Tourism (BTV) en 57 países. Reúne conjuntos de datos de libre acceso, muchos de ellos mantenidos por organizaciones internacionales, sobre el tipo de asentamiento y la población, el acceso a ciudades y medios de transporte, y reconocimientos internacionales como los sitios de la UNESCO y las áreas protegidas. Sus mapas se han diseñado de conformidad con las convenciones cartográficas de las Naciones Unidas.</p>
-            <span class="more">Herramienta interna de trabajo, no pública</span>
-          </div>
-        </li>
         <li>
           <img src="../assets/lab/samer.jpg" alt="La página de inicio de Samer: el titular Meet Samer, your speaking companion, junto a una demostración en directo del teleprónter con un discurso de ejemplo" loading="lazy" width="800" height="506">
           <div class="body">
@@ -298,12 +296,13 @@
 
     <section id="contact" class="wrap section">
       <h2>Contacto</h2>
-      <p class="muted">Para el intercambio profesional, puede establecerse contacto por correo electrónico o a través de LinkedIn.</p>
+      <p class="muted">Se agradece el intercambio sobre diseño de programas, financiación y datos empíricos por correo electrónico o a través de LinkedIn.</p>
       <div class="actions">
         <!-- The address is assembled by script so that it is not readable by simple scrapers. -->
         <a class="btn primary" id="email-link" href="#contact" data-user="jost.neumann87" data-domain="googlemail.com">Enviar un correo electrónico</a>
         <a class="btn" href="https://www.linkedin.com/in/jost-neumann05802853" target="_blank" rel="noopener">Conectar en LinkedIn</a>
       </div>
+      <noscript><p class="muted">Correo electrónico: jost.neumann87 [at] googlemail [dot] com</p></noscript>
       <p class="disclaimer">Las opiniones expresadas en este sitio son personales y no reflejan necesariamente las de ningún empleador actual o anterior.</p>
     </section>
 
@@ -312,12 +311,12 @@
     </footer>
   </main>
 
-  <script>window.I18N = {"about": "Perfil", "experience": "Experiencia", "writing": "Artículos", "resources": "Recursos", "lab": "Laboratorio", "contact": "Contacto", "scene": "Escena", "lofi": "LO-FI", "soundOn": "Activar sonido", "soundOff": "Silenciar", "night": "Noche", "dawn": "Amanecer", "morning": "Mañana", "midday": "Mediodía", "afternoon": "Tarde", "dusk": "Atardecer", "evening": "Anochecer", "months": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"], "monthsShort": ["ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sept.", "oct.", "nov.", "dic."], "dateFmt": "{m} de {y}", "present": "actualidad", "presentWord": "actualidad", "decimal": ",", "xpKicker": "La experiencia en puntos de datos", "byYear": "Por año", "bySector": "Por sector", "viewLabel": "Vista", "xpCaption": "Cada punto representa un mes de experiencia profesional desde {start}, coloreado según el sector.", "xpCaptionAdv": " Los puntos huecos bajo cada año indican las funciones de asesoramiento desempeñadas ese año;", "xpCaptionEdu": " los triángulos señalan los títulos académicos y los rombos, las certificaciones.", "xpCaptionEnd": " Al pasar el cursor sobre un punto o tocarlo se muestran los detalles; al seleccionarlo se accede a la entrada correspondiente más abajo.", "xpAria": "Gráfico de puntos de {months} meses (aproximadamente {years} años) de experiencia profesional por año y sector: {list}.", "yearsWord": "años", "yrs": "AÑOS", "sec_un": "Naciones Unidas", "sec_phil": "Filantropía", "sec_hum": "Humanitario", "sec_priv": "Sector privado", "sec_res": "Investigación", "advisoryYear": "Funciones de asesoramiento, {year}", "abKicker": "El perfil en puntos de datos", "abCaption": "Cada punto representa una unidad, según se indica en el recuadro. Al pasar el cursor sobre un recuadro o sobre una frase resaltada del texto, o al tocarlos, se vinculan ambos elementos.", "figs": [{"key": "inv", "n": 40, "phrase": "aproximadamente 40 millones de euros de capital filantrópico", "num": "aprox. {n} millones de euros", "lab": "capital filantrópico invertido en proyectos en destinos", "unit": "1 punto = 1 millón de euros"}, {"key": "mob", "n": 12, "phrase": "más de 12 millones de euros procedentes de donantes institucionales", "num": "más de {n} millones de euros", "lab": "movilizados de donantes institucionales", "unit": "1 punto = 1 millón de euros"}]};</script>
+  <script>window.I18N = {"about": "Perfil", "experience": "Experiencia", "writing": "Artículos", "resources": "Recursos", "lab": "Laboratorio", "contact": "Contacto", "scene": "Escena", "lofi": "LO-FI", "soundOn": "Activar sonido", "soundOff": "Silenciar", "night": "Noche", "dawn": "Amanecer", "morning": "Mañana", "midday": "Mediodía", "afternoon": "Tarde", "dusk": "Atardecer", "evening": "Anochecer", "months": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"], "monthsShort": ["ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sept.", "oct.", "nov.", "dic."], "dateFmt": "{m} de {y}", "present": "actualidad", "presentWord": "actualidad", "decimal": ",", "xpKicker": "La experiencia en puntos de datos", "byYear": "Por año", "bySector": "Por sector", "viewLabel": "Vista", "xpCaption": "Cada punto representa un mes de experiencia profesional desde {start}, coloreado según el sector.", "xpCaptionAdv": " Los puntos huecos bajo cada año indican las funciones de asesoramiento desempeñadas ese año;", "xpCaptionEdu": " los triángulos señalan los títulos académicos y los rombos, las certificaciones.", "xpCaptionEnd": " Al pasar el cursor sobre un punto o tocarlo se muestran los detalles; al seleccionarlo se accede a la entrada correspondiente más abajo.", "xpAria": "Gráfico de puntos de {months} meses (aproximadamente {years} años) de experiencia profesional por año y sector: {list}.", "yearsWord": "años", "yrs": "AÑOS", "sec_un": "Naciones Unidas", "sec_phil": "Filantropía", "sec_hum": "Humanitario", "sec_priv": "Sector privado", "sec_res": "Investigación", "advisoryYear": "Funciones de asesoramiento, {year}", "abKicker": "El perfil en puntos de datos", "abCaption": "Cada punto representa una unidad, según se indica en el recuadro. Al pasar el cursor sobre un recuadro o sobre una frase resaltada del texto, o al tocarlos, se vinculan ambos elementos.", "figs": [{"key": "inv", "n": 40, "phrase": "aproximadamente 40 millones de euros de capital filantrópico", "num": "aprox. {n} millones de euros", "lab": "inversión supervisada de capital filantrópico en proyectos en destinos, 2018–2025", "unit": "1 punto = 1 millón de euros"}, {"key": "mob", "n": 12, "phrase": "más de 12 millones de euros procedentes de donantes institucionales", "num": "más de {n} millones de euros", "lab": "movilizados de donantes institucionales, 2018–2025", "unit": "1 punto = 1 millón de euros"}]};</script>
   <script src="../topo.js?v=2026-10-23"></script>
   <script src="../lineart.js?v=2026-10-25b"></script>
   <script src="../dots.js?v=2026-10-23"></script>
-  <script src="../xp-dots.js?v=2026-10-30"></script>
-  <script src="../room.js?v=2026-10-30"></script>
+  <script src="../xp-dots.js?v=2026-11-07b"></script>
+  <script src="../room.js?v=2026-11-07"></script>
   <script src="/analytics.js?v=2026-10-30" defer></script>
 </body>
 </html>

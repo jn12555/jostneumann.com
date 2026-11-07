@@ -86,9 +86,9 @@ html.js:not(.lofi) body { overflow: hidden; }
 
 .intro {
   /* name card: a tinted glass panel so the text never fights the room behind it */
-  position: fixed; left: 24px; bottom: 34px; z-index: 10; pointer-events: none;
-  max-width: min(540px, calc(100% - 300px));
-  padding: 18px 22px 16px;
+  position: fixed; left: 24px; bottom: 78px; z-index: 10; pointer-events: none;   /* above the disclaimer */
+  max-width: min(460px, calc(100% - 480px));
+  padding: 14px 18px 13px;
   background: linear-gradient(160deg, rgba(20, 16, 26, .72), rgba(14, 11, 18, .56));
   -webkit-backdrop-filter: blur(8px) saturate(1.1); backdrop-filter: blur(8px) saturate(1.1);
   border: 1px solid rgba(255, 231, 168, .14); border-radius: 14px;
@@ -137,6 +137,7 @@ html.og .top, html.og .dock, html.og .scene-disclaimer, html.og .touch-menu, htm
 .anim figcaption a, .article p a, .article li a { color: var(--lamp); }
 html.lofi .chip.time, html:not(.js) .chip.time, html.lofi #sound, html:not(.js) #sound { display: none; }
 #sound[aria-pressed="true"] { color: var(--screen); border-color: rgba(127, 245, 210, .5); }
+.intro-note { color: var(--muted); font-size: .8rem; margin-top: .55rem !important; }
 .intro-hint { font-family: var(--pixel); font-size: 1.3rem; color: var(--screen); margin-top: .5rem !important; letter-spacing: .06em; }
 .intro-hint::before { content: "> "; }
 .intro-hint::after { content: "_"; animation: blink 1s steps(1) infinite; }
@@ -400,6 +401,7 @@ body.panel-open .scene-disclaimer { opacity: 0; }
 
 /* phones held sideways: a short screen with a narrow panel */
 @media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  .intro { display: none; }   /* no room beside the scene; the text version and the panels carry it */
   .brand { font-size: .82rem; }
   .sections { gap: .1rem; }
   .sections a { font-size: 1.15rem; padding: .25rem .35rem; }
@@ -407,6 +409,25 @@ body.panel-open .scene-disclaimer { opacity: 0; }
   .panel-head { padding-left: 18px; padding-right: 18px; gap: .6rem; }
   .panel-kicker { white-space: nowrap; font-size: 1.25rem; }
   #close .long { display: none; }
+  .scene-disclaimer { font-size: .66rem; }
+}
+/* phones: the first-screen line in a compact card; on short screens tighter still, so the menu and the chips stay on one screen */
+@media (max-width: 760px) and (min-height: 521px), (max-aspect-ratio: 1/1) {
+  .intro { padding: 11px 14px 10px; }
+  .intro-role { font-size: .95rem; margin-top: 0 !important; }
+  .intro-tags { gap: .3rem; margin-top: .45rem !important; }
+  .intro-tags span { font-size: .92rem; padding: .2rem .5rem .16rem; }
+  .intro-note { font-size: .74rem; margin-top: .4rem !important; }
+}
+@media (max-height: 700px) and (max-aspect-ratio: 1/1) {
+  .intro { padding: 8px 12px; }
+  .intro-role { font-size: .86rem; line-height: 1.3; }
+  .intro-tags span { font-size: .8rem; }
+  .intro-note { display: none; }
+  .touch-menu { gap: .35rem; }
+  .touch-menu a { padding-top: .34rem; padding-bottom: .28rem; }
+  .dock { gap: .35rem; }
+  .dock .chip { font-size: .98rem; padding: .38rem .58rem .32rem; }   /* one row, whatever the language and the time of day */
   .scene-disclaimer { font-size: .66rem; }
 }
 /* translated pages: longer section names, so the panel title is set a little tighter */
@@ -437,6 +458,9 @@ html[dir="rtl"] :is(.timeline, .plain) > li::before { left: auto; right: -14px; 
 html[dir="rtl"] :is(.timeline, .plain) > li::after { left: -10px; right: -14px; background: linear-gradient(270deg, color-mix(in srgb, var(--hl, var(--screen)) 13%, transparent), transparent 75%); }
 html[dir="rtl"] :is(.posts a, .lab > li .body, .cards > li)::before { left: auto; right: -1px; border-radius: 2px 0 0 2px; }
 html[dir="rtl"] :is(.posts a, .lab > li .body, .cards > li)::after { background: linear-gradient(270deg, color-mix(in srgb, var(--hl, var(--screen)) 11%, transparent), transparent 70%); }
+html[dir="rtl"] .intro { left: auto; right: 24px; }
+@media (max-width: 760px) and (min-height: 521px), (max-aspect-ratio: 1/1) { html[dir="rtl"] .intro { left: 16px; right: 16px; } }
+@media (max-height: 600px) and (max-aspect-ratio: 1/1) { .intro { display: none; } }   /* the smallest phones: menu and chips first; the panels carry the same lines */
 html[dir="rtl"] .xp-icon { float: left; margin: .1rem .7rem .4rem 0; }
 html[dir="rtl"] .chip.arrow { transform: scaleX(-1); }
 html[dir="rtl"] .xp-stage canvas { direction: ltr; }

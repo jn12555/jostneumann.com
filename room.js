@@ -1240,13 +1240,13 @@ function layout() {
 function stackPortrait() {
   requestAnimationFrame(() => {
     if (!portrait) return;
-    const intro = document.getElementById('intro'), ib = intro ? intro.getBoundingClientRect().bottom : HEAD + VH * s0;
+    const intro = document.getElementById('intro'), ir = intro && intro.getBoundingClientRect(), ib = ir && ir.height ? ir.bottom : HEAD + VH * s0;   // the first-screen card, or the scene band where the card is hidden
     html.style.setProperty('--menu-top', Math.round(ib + 14) + 'px');
     requestAnimationFrame(() => {
       html.style.setProperty('--disc-top', Math.round(document.querySelector('.touch-menu').getBoundingClientRect().bottom + 12) + 'px');
       requestAnimationFrame(() => {
         const d = document.querySelector('.scene-disclaimer'); if (!d) return;
-        const top = Math.round(d.getBoundingClientRect().bottom + 12), over = top + 44 - (vh - 10);
+        const dk = document.querySelector('.dock'), top = Math.round(d.getBoundingClientRect().bottom + 12), over = top + (dk && dk.offsetHeight || 44) - (vh - 10);   // the chips may wrap to two rows
         html.style.setProperty('--dock-top', top + 'px');                                  // the chips follow the disclaimer
         if (over > 2 && s0 > .61 && fitShrink < 600) { fitShrink += over; layout(); cur = { ...goal, p: cur.p }; }   // too tall: shrink the scene band until all fits
       });

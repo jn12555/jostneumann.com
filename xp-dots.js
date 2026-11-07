@@ -301,9 +301,9 @@
     const text = prose.textContent, figs = [];
     if (L.figs) L.figs.forEach(f => { if (text.includes(f.phrase)) figs.push({ key: f.key, n: f.n, num: k => f.num.replace('{n}', k), lab: f.lab, unit: f.unit, color: f.key === 'inv' ? '#ffb35a' : '#ffe7a8', phrase: f.phrase }); });
     let m = !L.figs && text.match(/approximately EUR (\d+) million of philanthropic capital/);
-    if (m) figs.push({ key: 'inv', n: +m[1], num: k => `EUR ${k} million`, lab: 'philanthropic capital invested in destination projects, approximately', unit: '1 dot = EUR 1 million', color: '#ffb35a', phrase: m[0] });
+    if (m) figs.push({ key: 'inv', n: +m[1], num: k => `approx. EUR ${k} million`, lab: 'investment of philanthropic capital in destination projects overseen, 2018–2025', unit: '1 dot = EUR 1 million', color: '#ffb35a', phrase: m[0] });
     m = !L.figs && text.match(/more than EUR (\d+) million from institutional donors/);
-    if (m) figs.push({ key: 'mob', n: +m[1], num: k => `EUR ${k} million`, lab: 'mobilized from institutional donors, more than', unit: '1 dot = EUR 1 million', color: '#ffe7a8', phrase: m[0] });
+    if (m) figs.push({ key: 'mob', n: +m[1], num: k => `more than EUR ${k} million`, lab: 'mobilized from institutional donors, 2018–2025', unit: '1 dot = EUR 1 million', color: '#ffe7a8', phrase: m[0] });
     if (!figs.length) return;
 
     const fig = document.createElement('figure'); fig.className = 'xp-viz'; fig.dataset.kind = 'about';

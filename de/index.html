@@ -36,7 +36,7 @@
     try { if (localStorage.getItem('jn-mode') === 'lofi') document.documentElement.classList.add('lofi'); } catch (e) {}
   </script>
   <link rel="stylesheet" href="../assets/fonts/fonts.css">
-  <link rel="stylesheet" href="../styles.css?v=2026-10-30">
+  <link rel="stylesheet" href="../styles.css?v=2026-11-07d">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23120f16'/%3E%3Crect x='3' y='4' width='10' height='7' fill='%23d3c8ae'/%3E%3Crect x='4' y='5' width='8' height='5' fill='%2310201c'/%3E%3Crect x='5' y='7' width='4' height='1' fill='%237ff5d2'/%3E%3Crect x='6' y='11' width='4' height='2' fill='%23bfb398'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -58,6 +58,11 @@
   <div class="scene" id="scene">
     <canvas id="room" role="img" aria-label="Pixel-Art-Illustration eines Büros in einer Holzhütte im Wald. Eine raumhohe Glaswand gibt den Blick frei auf einen ruhigen Waldfluss, Wiesen und ein Bergpanorama; das Licht folgt der lokalen Tageszeit. An der linken Wand hängt ein gerahmter Druck. Auf einem schlichten Schreibtisch öffnen der gewölbte Bildschirm, die Bücher, das Notizbuch, der Dokumentenhalter, das Telefon und ein Glaskolben die Abschnitte dieser Seite."></canvas>
     <div class="tip" id="tip" aria-hidden="true"></div>
+    <div class="intro" id="intro">
+      <p class="intro-role">Finanzierung, Evidenz und Werkzeuge für Menschen, Orte und Natur.</p>
+      <p class="intro-tags"><span>Rund 40 Mio. EUR Investitionen beaufsichtigt</span><span>Mehr als 12 Mio. EUR mobilisiert</span></p>
+      <p class="intro-note">TUI Care Foundation, 2018–2025</p>
+    </div>
     <nav class="touch-menu" aria-label="Abschnitte">
       <a href="#about" data-go="about"><b>01</b> Profil</a>
       <a href="#experience" data-go="experience"><b>02</b> Erfahrung</a>
@@ -108,8 +113,8 @@
     <section id="about" class="wrap section">
       <h2>Profil</h2>
       <div class="prose">
-        <p>Jost Neumann hat seinen Dienstsitz in Riad, Saudi-Arabien, und koordiniert das Programm „Tourism for Rural Development“ von UN Tourism, der Sonderorganisation der Vereinten Nationen für Tourismus. Die Funktion umfasst Advocacy, Beratungsleistungen sowie technische und finanzielle Unterstützung für die Mitgliedstaaten, die Koordinierung des Netzwerks Best Tourism Villages by UN Tourism (BTV) und des Kleinzuschussprogramms „Tourism for Rural Development Small Grants“.</p>
-        <p>Von 2018 bis 2025 hatte Jost Neumann leitende Funktionen im Programmbereich der TUI Care Foundation inne. Als Programmdirektor (2022–2025) verantwortete Jost Neumann die Investition von rund 40 Mio. EUR philanthropischen Kapitals in Destinationsprojekte zu Unternehmertum, Bildung und Naturschutz sowie die Mobilisierung von mehr als 12 Mio. EUR von institutionellen Gebern. Mehrere Projekte wurden ausgezeichnet, unter anderem mit dem Responsible Tourism Award und dem Deutschen Nachhaltigkeitspreis.</p>
+        <p>Von 2018 bis 2025 hatte Jost Neumann leitende Funktionen im Programmbereich der TUI Care Foundation inne, zunächst als Leiter Wirtschaftsentwicklung und anschließend als Programmdirektor. In diesem Zeitraum beaufsichtigte Jost Neumann die Investition von rund 40 Mio. EUR philanthropischen Kapitals in Destinationsprojekte zu Unternehmertum, Bildung und Naturschutz sowie die Mobilisierung von mehr als 12 Mio. EUR von institutionellen Gebern. Mehrere Projekte wurden ausgezeichnet, unter anderem mit dem Responsible Tourism Award und dem Deutschen Nachhaltigkeitspreis.</p>
+        <p>Jost Neumann ist in Riad, Saudi-Arabien, tätig und koordiniert das Programm „Tourism for Rural Development“ von UN Tourism.</p>
         <p>Zu den früheren Stationen zählen Funktionen in den Bereichen wirtschaftlicher Wiederaufbau und Kommunikation beim International Rescue Committee, verantwortungsvolle Investitionen im östlichen und südlichen Afrika sowie Strategiearbeit beim Vodafone Institute. Die Tätigkeit verbindet Fachkenntnisse in Philanthropie, Impact Investing und innovativer Finanzierung mit Felderfahrung in Südostasien, Afrika und dem Nahen Osten.</p>
       </div>
     </section>
@@ -131,11 +136,12 @@
           <p class="when">März 2025 – heute</p>
           <div>
             <h3>Programmkoordinator, Programm „Tourism for Rural Development“</h3>
-            <p class="org">UN Tourism · Riad, Saudi-Arabien</p>
+            <p class="org">UN Tourism · Berlin, Deutschland, und Riad, Saudi-Arabien (ab Juni 2025)</p>
             <ul>
               <li>Koordiniert das Kleinzuschussprogramm „Tourism for Rural Development Small Grants“.</li>
               <li>Leitet ein multidisziplinäres Team von Fachleuten, das Advocacy, Beratungsleistungen sowie technische und finanzielle Unterstützung für Mitgliedstaaten in allen Weltregionen erbringt.</li>
               <li>Koordiniert das Netzwerk Best Tourism Villages by UN Tourism (BTV), einschließlich technischer Unterstützung und des Aufbaus von Partnerschaften.</li>
+              <li>Entwickelte für das Programm den BTV Digital Explorer, ein Arbeitsinstrument auf Grundlage offener Daten (nicht öffentlich).</li>
             </ul>
           </div>
         </li>
@@ -145,7 +151,8 @@
             <h3>Programmdirektor</h3>
             <p class="org">TUI Care Foundation · Berlin, Deutschland</p>
             <ul>
-              <li>Investierte rund 40 Mio. EUR philanthropischen Kapitals in Destinationsprojekte zu Unternehmertum, Bildung und Naturschutz.</li>
+              <li>Beaufsichtigte von 2018 bis 2025, in beiden Funktionen bei der Stiftung, die Investition von rund 40 Mio. EUR philanthropischen Kapitals in Destinationsprojekte zu Unternehmertum, Bildung und Naturschutz.</li>
+              <li>Beaufsichtigte von 2018 bis 2025 die Mobilisierung von mehr als 12 Mio. EUR von institutionellen Gebern.</li>
               <li>Verantwortete ein globales Förderportfolio in allen Weltregionen mit Projekten zu Naturschutz, Unternehmertum, Bildung, Kulturerbe und Impact-Finanzierung für Unternehmen.</li>
               <li>Entwickelte die Programmstrategie und den Rahmen für Monitoring und Evaluierung der Stiftung.</li>
               <li>Projekte erhielten unter anderem den Responsible Tourism Award, den Deutschen Nachhaltigkeitspreis und den Responsible Travel Award.</li>
@@ -156,7 +163,7 @@
           <p class="when">Juni 2018 – Februar 2022</p>
           <div>
             <h3>Leiter Wirtschaftsentwicklung</h3>
-            <p class="org">TUI Care Foundation · Palma de Mallorca, Spanien</p>
+            <p class="org">TUI Care Foundation · Palma de Mallorca, Spanien, und Berlin, Deutschland (ab 2020)</p>
             <ul>
               <li>Entwickelte ein Portfolio zuschussfinanzierter Projekte zu nachhaltiger Landwirtschaft, Abenteuertourismus, Unternehmertum und Tourismusentwicklung in Ländern mit niedrigem und mittlerem Einkommen in verschiedenen Weltregionen.</li>
             </ul>
@@ -260,20 +267,11 @@
       </ul>
     </section>
 
-    <!-- LAB:START (draft: tools/build.py leaves this out unless --with-lab) -->
+    <!-- LAB:START (published; tools/build.py --no-lab leaves this out) -->
     <section id="lab" class="wrap section">
       <h2>Labor</h2>
       <p class="muted">Kleine Werkzeuge und Experimente. Es handelt sich um persönliche Projekte: Ideen, Gestaltungsentscheidungen, Tests und abschließende Prüfungen stammen von Jost Neumann selbst.</p>
       <ul class="lab">
-        <li>
-          <img src="../assets/lab/explorer.jpg" alt="Der Startbildschirm des BTV Digital Explorer: eine dunkle Karte aus Punkten, einer je Dorf, mit dem Titel An open data rural tourism explorer" loading="lazy" width="800" height="500">
-          <div class="body">
-            <p class="kw">Internes Arbeitsinstrument · Offene Daten</p>
-            <h3>BTV Digital Explorer</h3>
-            <p>Ein internes Arbeitsinstrument zur Auswertung offener Daten zu den 236 Best Tourism Villages by UN Tourism (BTVs) in 57 Ländern. Es führt frei verfügbare Datensätze zusammen, viele davon von internationalen Organisationen gepflegt, zu Siedlungstyp und Bevölkerung, zur Erreichbarkeit von Städten und Verkehrsverbindungen sowie zu internationalen Auszeichnungen wie UNESCO-Stätten und Schutzgebieten. Die Karten sind so gestaltet, dass sie den kartografischen Konventionen der Vereinten Nationen folgen.</p>
-            <span class="more">Internes Arbeitsinstrument, nicht öffentlich</span>
-          </div>
-        </li>
         <li>
           <img src="../assets/lab/samer.jpg" alt="Die Startseite von Samer: die Überschrift Meet Samer, your speaking companion neben einer Live-Demo des Teleprompters mit einer Beispielrede" loading="lazy" width="800" height="506">
           <div class="body">
@@ -298,12 +296,13 @@
 
     <section id="contact" class="wrap section">
       <h2>Kontakt</h2>
-      <p class="muted">Für den fachlichen Austausch ist eine Kontaktaufnahme per E-Mail oder über LinkedIn willkommen.</p>
+      <p class="muted">Austausch zu Programmgestaltung, Finanzierung und Evidenz ist per E-Mail oder über LinkedIn willkommen.</p>
       <div class="actions">
         <!-- The address is assembled by script so that it is not readable by simple scrapers. -->
         <a class="btn primary" id="email-link" href="#contact" data-user="jost.neumann87" data-domain="googlemail.com">E-Mail senden</a>
         <a class="btn" href="https://www.linkedin.com/in/jost-neumann05802853" target="_blank" rel="noopener">Auf LinkedIn vernetzen</a>
       </div>
+      <noscript><p class="muted">E-Mail: jost.neumann87 [at] googlemail [dot] com</p></noscript>
       <p class="disclaimer">Die auf dieser Website geäußerten Ansichten sind persönlicher Natur und spiegeln nicht notwendigerweise die Ansichten derzeitiger oder früherer Arbeitgeber wider.</p>
     </section>
 
@@ -312,12 +311,12 @@
     </footer>
   </main>
 
-  <script>window.I18N = {"about": "Profil", "experience": "Erfahrung", "writing": "Beiträge", "resources": "Ressourcen", "lab": "Labor", "contact": "Kontakt", "scene": "Szene", "lofi": "LO-FI", "soundOn": "Ton an", "soundOff": "Ton aus", "night": "Nacht", "dawn": "Morgendämmerung", "morning": "Morgen", "midday": "Mittag", "afternoon": "Nachmittag", "dusk": "Abenddämmerung", "evening": "Abend", "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"], "monthsShort": ["Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez."], "dateFmt": "{m} {y}", "present": "heute", "presentWord": "heute", "decimal": ",", "xpKicker": "Erfahrung in Datenpunkten", "byYear": "Nach Jahr", "bySector": "Nach Sektor", "viewLabel": "Ansicht", "xpCaption": "Jeder Punkt steht für einen Monat Berufserfahrung seit {start}, eingefärbt nach Sektor.", "xpCaptionAdv": " Hohle Punkte unter jedem Jahr zählen die in diesem Jahr ausgeübten beratenden Funktionen;", "xpCaptionEdu": " Dreiecke markieren Studienabschlüsse, Rauten Zertifikate.", "xpCaptionEnd": " Für Details auf einen Punkt zeigen oder tippen; durch Auswahl zum Eintrag weiter unten wechseln.", "xpAria": "Punktdiagramm von {months} Monaten (rund {years} Jahre) Berufserfahrung nach Jahr und Sektor: {list}.", "yearsWord": "Jahre", "yrs": "JAHRE", "sec_un": "Vereinte Nationen", "sec_phil": "Philanthropie", "sec_hum": "Humanitäre Hilfe", "sec_priv": "Privatsektor", "sec_res": "Forschung", "advisoryYear": "Beratende Funktionen, {year}", "abKicker": "Profil in Datenpunkten", "abCaption": "Jeder Punkt steht für eine Einheit, wie auf der Kachel angegeben. Durch Zeigen auf oder Tippen auf eine Kachel oder eine hervorgehobene Textstelle werden beide miteinander verknüpft.", "figs": [{"key": "inv", "n": 40, "phrase": "rund 40 Mio. EUR philanthropischen Kapitals", "num": "rund {n} Mio. EUR", "lab": "in Destinationsprojekte investiertes philanthropisches Kapital", "unit": "1 Punkt = 1 Mio. EUR"}, {"key": "mob", "n": 12, "phrase": "mehr als 12 Mio. EUR von institutionellen Gebern", "num": "mehr als {n} Mio. EUR", "lab": "von institutionellen Gebern mobilisiert", "unit": "1 Punkt = 1 Mio. EUR"}]};</script>
+  <script>window.I18N = {"about": "Profil", "experience": "Erfahrung", "writing": "Beiträge", "resources": "Ressourcen", "lab": "Labor", "contact": "Kontakt", "scene": "Szene", "lofi": "LO-FI", "soundOn": "Ton an", "soundOff": "Ton aus", "night": "Nacht", "dawn": "Dämmerung", "morning": "Morgen", "midday": "Mittag", "afternoon": "Nachmittag", "dusk": "Dämmerung", "evening": "Abend", "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"], "monthsShort": ["Jan.", "Feb.", "März", "Apr.", "Mai", "Juni", "Juli", "Aug.", "Sept.", "Okt.", "Nov.", "Dez."], "dateFmt": "{m} {y}", "present": "heute", "presentWord": "heute", "decimal": ",", "xpKicker": "Erfahrung in Datenpunkten", "byYear": "Nach Jahr", "bySector": "Nach Sektor", "viewLabel": "Ansicht", "xpCaption": "Jeder Punkt steht für einen Monat Berufserfahrung seit {start}, eingefärbt nach Sektor.", "xpCaptionAdv": " Hohle Punkte unter jedem Jahr zählen die in diesem Jahr ausgeübten beratenden Funktionen;", "xpCaptionEdu": " Dreiecke markieren Studienabschlüsse, Rauten Zertifikate.", "xpCaptionEnd": " Für Details auf einen Punkt zeigen oder tippen; durch Auswahl zum Eintrag weiter unten wechseln.", "xpAria": "Punktdiagramm von {months} Monaten (rund {years} Jahre) Berufserfahrung nach Jahr und Sektor: {list}.", "yearsWord": "Jahre", "yrs": "JAHRE", "sec_un": "Vereinte Nationen", "sec_phil": "Philanthropie", "sec_hum": "Humanitäre Hilfe", "sec_priv": "Privatsektor", "sec_res": "Forschung", "advisoryYear": "Beratende Funktionen, {year}", "abKicker": "Profil in Datenpunkten", "abCaption": "Jeder Punkt steht für eine Einheit, wie auf der Kachel angegeben. Durch Zeigen auf oder Tippen auf eine Kachel oder eine hervorgehobene Textstelle werden beide miteinander verknüpft.", "figs": [{"key": "inv", "n": 40, "phrase": "rund 40 Mio. EUR philanthropischen Kapitals", "num": "rund {n} Mio. EUR", "lab": "Investition philanthropischen Kapitals in Destinationsprojekte, beaufsichtigt, 2018–2025", "unit": "1 Punkt = 1 Mio. EUR"}, {"key": "mob", "n": 12, "phrase": "mehr als 12 Mio. EUR von institutionellen Gebern", "num": "mehr als {n} Mio. EUR", "lab": "von institutionellen Gebern mobilisiert, 2018–2025", "unit": "1 Punkt = 1 Mio. EUR"}]};</script>
   <script src="../topo.js?v=2026-10-23"></script>
   <script src="../lineart.js?v=2026-10-25b"></script>
   <script src="../dots.js?v=2026-10-23"></script>
-  <script src="../xp-dots.js?v=2026-10-30"></script>
-  <script src="../room.js?v=2026-10-30"></script>
+  <script src="../xp-dots.js?v=2026-11-07b"></script>
+  <script src="../room.js?v=2026-11-07"></script>
   <script src="/analytics.js?v=2026-10-30" defer></script>
 </body>
 </html>
